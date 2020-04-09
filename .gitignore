@@ -1,0 +1,8 @@
+.vscode/
+TODO
+TODO2
+__pycache__/
+data/
+*.csv
+*.gexf
+output/
