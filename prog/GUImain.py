@@ -3,6 +3,8 @@ from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter.filedialog import asksaveasfile
 import os
+from pandastable import Table, TableModel
+import pandas as pd
 
 # import covid as prog
 from func import covid
@@ -31,17 +33,24 @@ class GUI():
             frame.grid_rowconfigure(row, minsize=20)
 
     def frame1(self, nb):
-        f1 = Frame(nb, width=self.frame_w, height=self.frame_h)
+        f1 = Frame(nb, width=self.frame_w, height=self.frame_h/2)
         f1.grid_propagate(0)    # Resets grid shrink and growth auto
+
+        ft = Frame(f1, width=self.frame_w, height=self.frame_h/2)
+        ft.pack(side=tk.BOTTOM)
+        Label(f1, text="DATA").grid(column=2, row=7, sticky='w')
+        df = pd.DataFrame()
+        pt = Table(ft, dataframe=df, rows=5, height=100, width=400)
+        pt.show()
 
         Label(f1, text="INPUT LINK").grid(column=2, row=2, sticky='w')
         linkTxt = tk.StringVar()
         link = Entry(f1, width=50,  textvariable=linkTxt)
+        link.focus()
         linkTxt.set("")
         link.grid(column=4, row=2)
 
         btn_down = Button(f1, text="DOWNLOAD")
-        l = ''
 
         # Nested click function for button
         def click_down():
@@ -50,9 +59,13 @@ class GUI():
                 return
             window.config(cursor="wait")
             # download db, on complete: continue
-            l = prog.getdownload(linkTxt.get())
+            df = prog.getdownload(linkTxt.get())
+            # df = TableModel.getSampleData()
             self.set_status("DOWNLOADED!")
             window.config(cursor="arrow")
+            if df is not None:
+                pt.updateModel(TableModel(df))
+                pt.redraw()
 
         btn_down.configure(command=click_down)
         btn_down.grid(column=2, row=5, sticky='sw')
@@ -60,7 +73,7 @@ class GUI():
         btn_save = Button(f1, text="SAVE")
 
         def click_save():
-            if l is not None:
+            if df is not None:
                 files = [('Comma Separated Values', '*.csv')]
                 save_file = asksaveasfile(
                     filetypes=files, defaultextension=files)
