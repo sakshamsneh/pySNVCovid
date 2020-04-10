@@ -94,16 +94,10 @@ class GUI():
         f2.grid_propagate(0)    # Resets grid shrink and growth auto
 
         Label(f2, text="SELECT GRAPH TYPE:").grid(column=2, row=2, sticky='w')
-        OPTIONS = [
-            "SELECT",
-            "P2P",
-            "STATE",
-            "DISTRICT",
-            "CITY"
-        ]
+        graph_field = prog.get_graph_field()
         graph_type = tk.StringVar(f2)
-        graph_type.set(OPTIONS[0])
-        option = OptionMenu(f2, graph_type, *OPTIONS)
+        graph_type.set(graph_field[0])
+        option = OptionMenu(f2, graph_type, *graph_field)
         option.config(width=40)
         option.grid(column=3, row=2)
 
@@ -130,7 +124,7 @@ class GUI():
             colord = prog.gen_graph(graph_type.get(), color_type.get())
             color = ""
             for k in colord.keys():
-                color += k+":"+colord.get(k)+"\n"
+                color += str(k)+":"+str(colord.get(k))+"\n"
 
             Label(f2, text="COLOR DETAILS").grid(column=2, row=8, sticky='w')
             info = tk.Text(f2, height=5, width=30)
@@ -155,6 +149,13 @@ class GUI():
 
         # Nested refresh function for ref button
         def refresh():
+            graph_field = prog.get_graph_field()
+            option['menu'].delete(0, 'end')
+            graph_type.set(graph_field[0])
+            for choice in graph_field:
+                option['menu'].add_command(
+                    label=choice, command=tk._setit(graph_type, choice))
+
             color_field = prog.get_color_field()
             optionc['menu'].delete(0, 'end')
             color_type.set(color_field[0])
@@ -226,8 +227,8 @@ class GUI():
             files = [('Graph Exchange XML Format', '*.gexf')]
             open_filename = askopenfilename(filetypes=files)
             if open_filename is not None:
-                infotxt=prog.open_file(open_filename, 1)
-                self.gexffile=open_filename
+                infotxt = prog.open_file(open_filename, 1)
+                self.gexffile = open_filename
                 info.configure(state=tk.NORMAL)
                 info.delete('1.0', tk.END)
                 info.insert(tk.END, infotxt)

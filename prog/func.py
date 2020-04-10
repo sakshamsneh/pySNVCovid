@@ -40,15 +40,6 @@ class covid():
         elif i == 1:
             nx.write_gexf(self.G, loc)
 
-    def switch(self, val):
-        switcher = {
-            "P2P": 'from',
-            "STATE": 'state',
-            "DISTRICT": 'district',
-            "CITY": 'city'
-        }
-        return switcher.get(val, 'from')
-
     def gen_df(self, dataframe):
         df = dataframe[['currentstatus', 'dateannounced',
                         'contractedFrom', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
@@ -77,6 +68,13 @@ class covid():
             color_field.remove('end')
         return color_field
 
+    def get_graph_field(self):
+        graph_field = []
+        graph_field.append("SELECT")
+        if not self.df.empty:
+            graph_field = list(self.df.columns)
+        return graph_field
+
     def set_color(self, col_list):
         colord = {}
         N = len(col_list)
@@ -101,7 +99,7 @@ class covid():
             s = row['start']
             e = row['end']
             t = row['id']
-            f = row[self.switch(graph_type)]
+            f = row[graph_type]
             if f:
                 edgelist.append([t, f, s, e])
 
