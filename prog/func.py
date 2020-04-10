@@ -8,6 +8,7 @@ import urllib.request as request
 import networkx as nx
 import json
 import re
+import colorsys
 
 
 class covid():
@@ -28,13 +29,14 @@ class covid():
             data['raw_data'], orient='columns')
         dataframe = dataframe.rename(
             columns={'contractedfromwhichpatientsuspected': 'contractedFrom'})
-        # dataframe = dataframe.iloc[:1000]
+        dataframe = dataframe.iloc[:100]
         self.dataframe = dataframe
         return dataframe.iloc[:5]
 
     def save_df(self, loc, i):
         if i == 0:
             self.dataframe.to_csv(loc)
+            self.gen_df()
         elif i == 1:
             nx.write_gexf(self.G, loc)
 
@@ -47,7 +49,7 @@ class covid():
         }
         return switcher.get(val, 'from')
 
-    def gen_graph(self, graph_type):
+    def gen_df(self):
         df = self.dataframe[['currentstatus', 'dateannounced',
                              'contractedFrom', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
         df.columns = ['status', 'start', 'from', 'age',
@@ -62,13 +64,37 @@ class covid():
                  'gender', 'age', 'city', 'district', 'state']]
         df['from'] = df['from'].apply(
             lambda x: abs(int(x)) if x.isnumeric() else '')
+        self.df = df
 
-        color = df['status'].unique()
+    def get_color_field(self):
+        color_field=[]
+        color_field.append("SELECT")
+        if not self.df.empty:
+            color_field = list(self.df.columns)
+            color_field.remove('id')
+            color_field.remove('from')
+            color_field.remove('start')
+            color_field.remove('end')
+        return color_field
+
+    def set_color(self, col_list):
         colord = {}
-        colord[color[0]] = 'green'
-        colord[color[1]] = 'orange'
-        colord[color[2]] = 'red'
-        colord[color[3]] = 'blue'
+        N = len(col_list)
+        HSV_tuples = [(x*1.0/N, 0.5, 0.5) for x in range(N)]
+        RGB_tuples = list(map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples))
+        rgb=[]
+        for val in RGB_tuples:
+            v=[255*x for x in val]
+            vals='#' + ''.join(['{:02X}'.format(int(round(x))) for x in v])
+            rgb.append(vals)
+        for i in range(N):
+            colord[col_list[i]] = rgb[i]
+        return colord
+
+    def gen_graph(self, graph_type, color_select):
+        df = self.df
+        color = df[color_select].unique()
+        colord = self.set_color(color)
 
         edgelist = []
         for index, row in df.iterrows():
@@ -91,12 +117,12 @@ class covid():
             else:
                 e = row['end'].timestamp()
             self.G.add_node(row['id'], start=s, end=e,
-                            color=colord.get(row['status'], 'orange'))
+                            color=colord.get(row[color_select], 'black'))
 
         data = pd.DataFrame(edgelist, columns=['u1', 'u2', 's', 'e'])
         for index, row in data.iterrows():
             self.G.add_edge(row['u2'], row['u1'])
-        return 0
+        return colord
 
     def get_info(self):
         return nx.info(self.G)

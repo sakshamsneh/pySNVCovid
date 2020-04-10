@@ -106,6 +106,14 @@ class GUI():
         option.config(width=40)
         option.grid(column=3, row=2)
 
+        Label(f2, text="SELECT COLOR FIELD:").grid(column=2, row=3, sticky='w')
+        color_field = prog.get_color_field()
+        color_type = tk.StringVar(f2)
+        color_type.set(color_field[0])
+        optionc = OptionMenu(f2, color_type, *color_field)
+        optionc.config(width=40)
+        optionc.grid(column=3, row=3)
+
         btn = Button(f2, text="GENERATE")
 
         # Nested click function for button
@@ -113,9 +121,23 @@ class GUI():
             if graph_type.get() == "SELECT":
                 self.msg("GRAPH TYPE")
                 return
+            elif color_type.get() == "SELECT":
+                self.msg("COLOR TYPE")
+                return
             window.config(cursor="wait")
             # generate graph, on complete: continue
-            prog.gen_graph(graph_type.get())
+            colord = prog.gen_graph(graph_type.get(), color_type.get())
+            color = ""
+            for k in colord.keys():
+                color += k+":"+colord.get(k)+"\n"
+
+            Label(f2, text="COLOR DETAILS").grid(column=2, row=8, sticky='w')
+            info = tk.Text(f2, height=5, width=30)
+            info.configure(state=tk.NORMAL)
+            info.insert(tk.END, color)
+            info.configure(state=tk.DISABLED)
+            info.grid(column=3, row=9, sticky='nw')
+
             self.set_status("GRAPH GENERATED!")
             files = [('Graph Exchange XML Format', '*.gexf')]
             save_file = asksaveasfile(filetypes=files, defaultextension=files)
@@ -123,11 +145,25 @@ class GUI():
                 self.gexffile = save_file.name
                 prog.save_df(self.gexffile, 1)
                 self.set_status("FILE SAVED AT "+self.gexffile)
-                # btn["text"] = "NEXT"
             window.config(cursor="arrow")
 
         btn.configure(command=click)
         btn.grid(column=3, row=5, sticky='se')
+
+        ref = Button(f2, text="REFRESH")
+
+        # Nested refresh function for ref button
+        def refresh():
+            color_field = prog.get_color_field()
+            color_type.set('')
+            optionc['menu'].delete(0, 'end')
+            for choice in color_field:
+                optionc['menu'].add_command(
+                    label=choice, command=tk._setit(color_type, choice))
+            self.set_status("REFRESHED!")
+
+        ref.configure(command=refresh)
+        ref.grid(column=2, row=5, sticky='ws')
 
         self.grid_config(f2)
         return f2
