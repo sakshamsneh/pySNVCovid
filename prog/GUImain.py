@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter.filedialog import asksaveasfile
-import os
 from pandastable import Table, TableModel
 import pandas as pd
+from subprocess import Popen
 
 # import covid as prog
 from func import covid
@@ -184,8 +184,8 @@ class GUI():
         def click():
             window.config(cursor="wait")
             # run GEPHI
-            cmd = 'cmd /c ' + self.gexffile + ' --console suppress'
-            os.system(cmd)
+            cmd = 'cmd /c ' + self.gexffile
+            Popen(cmd, shell=False)
             window.config(cursor="arrow")
 
         btn.configure(command=click)

@@ -29,7 +29,7 @@ class covid():
             data['raw_data'], orient='columns')
         dataframe = dataframe.rename(
             columns={'contractedfromwhichpatientsuspected': 'contractedFrom'})
-        dataframe = dataframe.iloc[:100]
+        # dataframe = dataframe.iloc[:1000]
         self.dataframe = dataframe
         return dataframe.iloc[:5]
 
