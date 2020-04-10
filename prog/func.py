@@ -36,7 +36,7 @@ class covid():
     def save_df(self, loc, i):
         if i == 0:
             self.dataframe.to_csv(loc)
-            self.gen_df()
+            self.gen_df(self.dataframe)
         elif i == 1:
             nx.write_gexf(self.G, loc)
 
@@ -49,9 +49,9 @@ class covid():
         }
         return switcher.get(val, 'from')
 
-    def gen_df(self):
-        df = self.dataframe[['currentstatus', 'dateannounced',
-                             'contractedFrom', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
+    def gen_df(self, dataframe):
+        df = dataframe[['currentstatus', 'dateannounced',
+                        'contractedFrom', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
         df.columns = ['status', 'start', 'from', 'age',
                       'city', 'district', 'state', 'gender', 'id', 'end']
         df.index = df['id']
@@ -67,7 +67,7 @@ class covid():
         self.df = df
 
     def get_color_field(self):
-        color_field=[]
+        color_field = []
         color_field.append("SELECT")
         if not self.df.empty:
             color_field = list(self.df.columns)
@@ -82,10 +82,10 @@ class covid():
         N = len(col_list)
         HSV_tuples = [(x*1.0/N, 0.5, 0.5) for x in range(N)]
         RGB_tuples = list(map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples))
-        rgb=[]
+        rgb = []
         for val in RGB_tuples:
-            v=[255*x for x in val]
-            vals='#' + ''.join(['{:02X}'.format(int(round(x))) for x in v])
+            v = [255*x for x in val]
+            vals = '#' + ''.join(['{:02X}'.format(int(round(x))) for x in v])
             rgb.append(vals)
         for i in range(N):
             colord[col_list[i]] = rgb[i]
@@ -126,3 +126,11 @@ class covid():
 
     def get_info(self):
         return nx.info(self.G)
+
+    def open_file(self, filename, chk):
+        if chk == 0:
+            dataframe = pd.read_csv(filename, index_col=0)
+            self.gen_df(dataframe)
+        elif chk == 1:
+            G = nx.read_gexf(filename)
+            return nx.info(G)

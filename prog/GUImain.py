@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter.ttk import *
 from tkinter import messagebox
-from tkinter.filedialog import asksaveasfile
+from tkinter.filedialog import asksaveasfile, askopenfilename
 from pandastable import Table, TableModel
 import pandas as pd
 from subprocess import Popen
@@ -38,10 +38,10 @@ class GUI():
 
         ft = Frame(f1, width=self.frame_w, height=self.frame_h/2)
         ft.pack(side=tk.BOTTOM)
-        Label(f1, text="DATA").grid(column=2, row=7, sticky='w')
+        # Label(f1, text="DATA").grid(column=2, row=7, sticky='w')
         df = pd.DataFrame()
         pt = Table(ft, dataframe=df, rows=5, height=100, width=400)
-        pt.show()
+        # pt.show()
 
         Label(f1, text="INPUT LINK").grid(column=2, row=2, sticky='w')
         linkTxt = tk.StringVar()
@@ -59,12 +59,13 @@ class GUI():
                 return
             window.config(cursor="wait")
             # download db, on complete: continue
-            df = prog.getdownload(linkTxt.get())
-            # df = TableModel.getSampleData()
+            # df = prog.getdownload(linkTxt.get())
+            df = TableModel.getSampleData()
             self.set_status("DOWNLOADED!")
             window.config(cursor="arrow")
             if df is not None:
                 pt.updateModel(TableModel(df))
+                pt.show()
                 pt.redraw()
 
         btn_down.configure(command=click_down)
@@ -155,8 +156,8 @@ class GUI():
         # Nested refresh function for ref button
         def refresh():
             color_field = prog.get_color_field()
-            color_type.set('')
             optionc['menu'].delete(0, 'end')
+            color_type.set(color_field[0])
             for choice in color_field:
                 optionc['menu'].add_command(
                     label=choice, command=tk._setit(color_type, choice))
@@ -165,6 +166,20 @@ class GUI():
         ref.configure(command=refresh)
         ref.grid(column=2, row=5, sticky='ws')
 
+        ref = Button(f2, text="OPEN")
+
+        # Nested refresh function for open button
+        def open():
+            files = [('Comma Separated Values', '*.csv')]
+            open_filename = askopenfilename(filetypes=files)
+            if open_filename is not None:
+                prog.open_file(open_filename, 0)
+                refresh()
+                self.set_status("FILE OPENED "+open_filename)
+
+        ref.configure(command=open)
+        ref.grid(column=2, row=1, sticky='wn')
+
         self.grid_config(f2)
         return f2
 
@@ -172,11 +187,11 @@ class GUI():
         f3 = Frame(nb, width=self.frame_w, height=self.frame_h)
         f3.grid_propagate(0)    # Resets grid shrink and growth auto
 
-        Label(f3, text="GRAPH DETAILS").grid(column=1, row=1, sticky='w')
+        Label(f3, text="GRAPH DETAILS").grid(column=2, row=2, sticky='w')
         info = tk.Text(f3, height=5, width=40)
         info.insert(tk.END, prog.get_info())
         info.configure(state=tk.DISABLED)
-        info.grid(column=1, row=2, sticky='nw')
+        info.grid(column=2, row=3, sticky='nw')
 
         btn = Button(f3, text="LAUNCH GEPHI")
 
@@ -202,7 +217,25 @@ class GUI():
             self.set_status("REFRESHED!")
 
         ref.configure(command=refresh)
-        ref.grid(column=1, row=6, sticky='ws')
+        ref.grid(column=2, row=6, sticky='ws')
+
+        ref = Button(f3, text="OPEN")
+
+        # Nested refresh function for open button
+        def open():
+            files = [('Graph Exchange XML Format', '*.gexf')]
+            open_filename = askopenfilename(filetypes=files)
+            if open_filename is not None:
+                infotxt=prog.open_file(open_filename, 1)
+                self.gexffile=open_filename
+                info.configure(state=tk.NORMAL)
+                info.delete('1.0', tk.END)
+                info.insert(tk.END, infotxt)
+                info.configure(state=tk.DISABLED)
+                self.set_status("FILE OPENED "+open_filename)
+
+        ref.configure(command=open)
+        ref.grid(column=2, row=1, sticky='wn')
 
         self.grid_config(f3)
         return f3
