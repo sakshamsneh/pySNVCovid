@@ -59,8 +59,8 @@ class GUI():
                 return
             window.config(cursor="wait")
             # download db, on complete: continue
-            # df = prog.getdownload(linkTxt.get())
-            df = TableModel.getSampleData()
+            df = prog.getdownload(linkTxt.get())
+            # df = TableModel.getSampleData()
             self.set_status("DOWNLOADED!")
             window.config(cursor="arrow")
             if df is not None:

@@ -29,7 +29,7 @@ class covid():
             data['raw_data'], orient='columns')
         dataframe = dataframe.rename(
             columns={'contractedfromwhichpatientsuspected': 'contractedFrom'})
-        # dataframe = dataframe.iloc[:1000]
+        dataframe = dataframe.iloc[:1000]
         self.dataframe = dataframe
         return dataframe.iloc[:5]
 
@@ -46,8 +46,17 @@ class covid():
         df.columns = ['status', 'start', 'from', 'age',
                       'city', 'district', 'state', 'gender', 'id', 'end']
         df.index = df['id']
-        df['start'] = pd.to_datetime(df['start'])
-        df['end'] = pd.to_datetime(df['end'])
+        df['start'] = pd.to_datetime(df['start'], format="%d/%m/%Y")
+        df['start'] = df['start'].apply(lambda x: x.strftime("%Y-%m-%d"))
+
+        df['end'] = pd.to_datetime(
+            df['end'], format="%d/%m/%Y", errors='coerce')
+        df['end'] = df['end'].apply(lambda x: x.strftime(
+            "%Y-%m-%d") if not pd.isnull(x) else x)
+        for i, r in df.iterrows():
+            if r['start']>r['end']:
+                r['end']=pd.NaT
+
         df['from'] = df['from'].apply(lambda x: re.sub('P', '', str(x)))
         df['from'] = df['from'].apply(
             lambda x: x.split(",")[0] if ", " in x else x)
@@ -106,14 +115,14 @@ class covid():
         for index, row in df.iterrows():
             s = row['start']
             if pd.isnull(s):
-                e = dt.datetime.now().timestamp()
+                e = dt.datetime.today().strftime("%Y-%m-%d")
             else:
-                s = row['start'].timestamp()
+                s = row['start']
             e = row['end']
             if pd.isnull(e):
-                e = dt.datetime.now().timestamp()
+                e = dt.datetime.today().strftime("%Y-%m-%d")
             else:
-                e = row['end'].timestamp()
+                e = row['end']
             self.G.add_node(row['id'], start=s, end=e,
                             color=colord.get(row[color_select], 'black'))
 
