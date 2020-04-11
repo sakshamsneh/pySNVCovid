@@ -5,6 +5,8 @@ from tkinter.filedialog import asksaveasfile, askopenfilename
 from pandastable import Table, TableModel
 import pandas as pd
 from subprocess import Popen
+import queue
+import threading
 
 # import covid as prog
 from func import covid
@@ -52,6 +54,17 @@ class GUI():
 
         btn_down = Button(f1, text="DOWNLOAD")
 
+        def process_queue():
+            try:
+                df = self.queue.get(0)
+                if df is not None:
+                    pt.updateModel(TableModel(df))
+                    pt.show()
+                    pt.redraw()
+                    self.set_status("DOWNLOADED!")
+            except queue.Empty:
+                self.window.after(100, process_queue)
+
         # Nested click function for button
         def click_down():
             if not linkTxt.get():
@@ -59,14 +72,12 @@ class GUI():
                 return
             window.config(cursor="wait")
             # download db, on complete: continue
-            df = prog.getdownload(linkTxt.get())
-            # df = TableModel.getSampleData()
-            self.set_status("DOWNLOADED!")
+            self.set_status("DOWNLOADING!")
+            # self.download(linkTxt.get(), pt)
+            self.queue = queue.Queue()
+            ThreadedTask(self.queue, linkTxt.get()).start()
+            df = self.window.after(100, process_queue)
             window.config(cursor="arrow")
-            if df is not None:
-                pt.updateModel(TableModel(df))
-                pt.show()
-                pt.redraw()
 
         btn_down.configure(command=click_down)
         btn_down.grid(column=2, row=5, sticky='sw')
@@ -272,6 +283,18 @@ class GUI():
         st.grid(row=2, sticky='ws')
 
         window.mainloop()
+
+
+class ThreadedTask(threading.Thread):
+    def __init__(self, queue, link):
+        threading.Thread.__init__(self)
+        self.queue = queue
+        self.link = link
+
+    def run(self):
+        df = prog.getdownload(self.link)
+        # df = TableModel.getSampleData()
+        self.queue.put(df)
 
 
 if __name__ == "__main__":
