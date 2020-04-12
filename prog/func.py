@@ -46,6 +46,7 @@ class covid():
         df.columns = ['status', 'start', 'from', 'age',
                       'city', 'district', 'state', 'gender', 'id', 'end']
         df.index = df['id']
+        df['start'] = df['start'].apply(lambda x: dt.datetime.today().strftime("%d/%m/%Y") if pd.isnull(pd.to_datetime(x)) else x)
         df['start'] = pd.to_datetime(df['start'], format="%d/%m/%Y")
         df['start'] = df['start'].apply(lambda x: x.strftime("%Y-%m-%d"))
 
