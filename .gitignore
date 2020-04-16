@@ -7,3 +7,4 @@ data/
 *.gexf
 output/
 extra_code1
+*.ipynb

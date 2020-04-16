@@ -73,7 +73,6 @@ class GUI():
             window.config(cursor="wait")
             # download db, on complete: continue
             self.set_status("DOWNLOADING!")
-            # self.download(linkTxt.get(), pt)
             self.queue = queue.Queue()
             ThreadedTask(self.queue, linkTxt.get()).start()
             df = self.window.after(100, process_queue)

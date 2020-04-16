@@ -12,6 +12,12 @@ import colorsys
 
 
 class covid():
+    """
+    GUI class creates GUI for a passed tkinter object and a data program.
+    This class uses ThreadedTask class for parallel processing of results.
+
+    Args: prog: data program instance window: tkinter root instance
+    """
     dataframe = pd.DataFrame()
     df = pd.DataFrame()
     G = nx.Graph(name="pySNV")
@@ -31,7 +37,7 @@ class covid():
             columns={'contractedfromwhichpatientsuspected': 'contractedFrom'})
         # dataframe = dataframe.iloc[:1000]
         self.dataframe = dataframe
-        return dataframe.iloc[:5]
+        return dataframe.iloc[:100]
 
     def save_df(self, loc, i):
         if i == 0:
@@ -46,7 +52,8 @@ class covid():
         df.columns = ['status', 'start', 'from', 'age',
                       'city', 'district', 'state', 'gender', 'id', 'end']
         df.index = df['id']
-        df['start'] = df['start'].apply(lambda x: dt.datetime.today().strftime("%d/%m/%Y") if pd.isnull(pd.to_datetime(x)) else x)
+        df['start'] = df['start'].apply(lambda x: dt.datetime.today().strftime(
+            "%d/%m/%Y") if pd.isnull(pd.to_datetime(x)) else x)
         df['start'] = pd.to_datetime(df['start'], format="%d/%m/%Y")
         df['start'] = df['start'].apply(lambda x: x.strftime("%Y-%m-%d"))
 
@@ -55,8 +62,8 @@ class covid():
         df['end'] = df['end'].apply(lambda x: x.strftime(
             "%Y-%m-%d") if not pd.isnull(x) else x)
         for i, r in df.iterrows():
-            if r['start']>r['end']:
-                r['end']=pd.NaT
+            if r['start'] > r['end']:
+                r['end'] = pd.NaT
 
         df['from'] = df['from'].apply(lambda x: re.sub('P', '', str(x)))
         df['from'] = df['from'].apply(
@@ -137,7 +144,7 @@ class covid():
 
     def open_file(self, filename, chk):
         if chk == 0:
-            dataframe = pd.read_csv(filename, index_col=0)
+            dataframe = pd.read_csv(filename, index_col=0, encoding = "cp1252")
             self.gen_df(dataframe)
         elif chk == 1:
             G = nx.read_gexf(filename)
