@@ -10,6 +10,7 @@ import threading
 
 # import covid as prog
 from func import covid
+from thread import ThreadedTask
 
 
 class GUI():
@@ -54,7 +55,7 @@ class GUI():
 
         btn_down = Button(f1, text="DOWNLOAD")
 
-        def process_queue():
+        def process_queue_dldf():
             try:
                 df = self.queue.get(0)
                 if df is not None:
@@ -62,8 +63,9 @@ class GUI():
                     pt.show()
                     pt.redraw()
                     self.set_status("DOWNLOADED!")
+                    window.config(cursor="arrow")
             except queue.Empty:
-                self.window.after(100, process_queue)
+                self.window.after(100, process_queue_dldf)
 
         # Nested click function for button
         def click_down():
@@ -74,24 +76,34 @@ class GUI():
             # download db, on complete: continue
             self.set_status("DOWNLOADING!")
             self.queue = queue.Queue()
-            ThreadedTask(self.queue, linkTxt.get()).start()
-            df = self.window.after(100, process_queue)
-            window.config(cursor="arrow")
+            ThreadedTask(self.queue, self.prog, "dldf", linkTxt.get()).start()
+            df = self.window.after(100, process_queue_dldf)
 
         btn_down.configure(command=click_down)
         btn_down.grid(column=2, row=5, sticky='sw')
 
         btn_save = Button(f1, text="SAVE")
 
+        def process_queue_scsv():
+            try:
+                msg = self.queue.get(0)
+                if msg is not None:
+                    self.set_status("FILE SAVED AT "+msg.name)
+                    window.config(cursor="arrow")
+            except queue.Empty:
+                self.window.after(100, process_queue_scsv)
+
         def click_save():
             if df is not None:
                 files = [('Comma Separated Values', '*.csv')]
                 save_file = asksaveasfile(
                     filetypes=files, defaultextension=files)
-                if save_file is not None:
-                    prog.save_df(save_file, 0)
-                    self.set_status("FILE SAVED AT "+save_file.name)
-                window.config(cursor="arrow")
+                if not save_file:
+                    return
+
+                self.queue = queue.Queue()
+                ThreadedTask(self.queue, self.prog, "scsv", save_file).start()
+                self.window.after(100, process_queue_scsv)
 
         btn_save.configure(command=click_save)
         btn_save.grid(column=4, row=5, sticky='se')
@@ -121,6 +133,50 @@ class GUI():
 
         btn = Button(f2, text="GENERATE")
 
+        def process_queue_sgexf():
+            try:
+                save_file = self.queue.get(0)
+                if save_file is not None:
+                    self.set_status("FILE SAVED AT "+save_file)
+                    window.config(cursor="arrow")
+            except queue.Empty:
+                self.window.after(100, process_queue_sgexf)
+
+        def process_queue_gengf():
+            try:
+                colord = self.queue.get(0)
+                if type(colord) is dict:
+                    color = ""
+                    for k in colord.keys():
+                        color += str(k)+":"+str(colord.get(k))+"\n"
+
+                    Label(f2, text="COLOR DETAILS").grid(
+                        column=2, row=8, sticky='w')
+                    info = tk.Text(f2, height=5, width=30)
+                    info.configure(state=tk.NORMAL)
+                    info.insert(tk.END, color)
+                    info.configure(state=tk.DISABLED)
+                    info.grid(column=3, row=9, sticky='nw')
+
+                    self.set_status("GRAPH GENERATED!")
+                    window.config(cursor="arrow")
+
+                    files = [('Graph Exchange XML Format', '*.gexf')]
+                    save_file = asksaveasfile(
+                        filetypes=files, defaultextension=files)
+                    if not save_file:
+                        return
+                    window.config(cursor="wait")
+                    self.gexffile = save_file.name
+
+                    self.queue = queue.Queue()
+                    ThreadedTask(self.queue, self.prog,
+                                 "sgexf", self.gexffile).start()
+                    self.window.after(100, process_queue_gengf)
+
+            except queue.Empty:
+                self.window.after(100, process_queue_gengf)
+
         # Nested click function for button
         def click():
             if graph_type.get() == "SELECT":
@@ -131,26 +187,10 @@ class GUI():
                 return
             window.config(cursor="wait")
             # generate graph, on complete: continue
-            colord = prog.gen_graph(graph_type.get(), color_type.get())
-            color = ""
-            for k in colord.keys():
-                color += str(k)+":"+str(colord.get(k))+"\n"
-
-            Label(f2, text="COLOR DETAILS").grid(column=2, row=8, sticky='w')
-            info = tk.Text(f2, height=5, width=30)
-            info.configure(state=tk.NORMAL)
-            info.insert(tk.END, color)
-            info.configure(state=tk.DISABLED)
-            info.grid(column=3, row=9, sticky='nw')
-
-            self.set_status("GRAPH GENERATED!")
-            files = [('Graph Exchange XML Format', '*.gexf')]
-            save_file = asksaveasfile(filetypes=files, defaultextension=files)
-            if save_file is not None:
-                self.gexffile = save_file.name
-                prog.save_df(self.gexffile, 1)
-                self.set_status("FILE SAVED AT "+self.gexffile)
-            window.config(cursor="arrow")
+            self.queue = queue.Queue()
+            ThreadedTask(self.queue, self.prog, "gengf",
+                         graph_type.get(), color_type.get()).start()
+            self.window.after(100, process_queue_gengf)
 
         btn.configure(command=click)
         btn.grid(column=3, row=5, sticky='se')
@@ -183,7 +223,7 @@ class GUI():
         def open():
             files = [('Comma Separated Values', '*.csv')]
             open_filename = askopenfilename(filetypes=files)
-            if open_filename is not None:
+            if open_filename:
                 prog.open_file(open_filename, 0)
                 refresh()
                 self.set_status("FILE OPENED "+open_filename)
@@ -236,7 +276,7 @@ class GUI():
         def open():
             files = [('Graph Exchange XML Format', '*.gexf')]
             open_filename = askopenfilename(filetypes=files)
-            if open_filename is not None:
+            if open_filename:
                 infotxt = prog.open_file(open_filename, 1)
                 self.gexffile = open_filename
                 info.configure(state=tk.NORMAL)
@@ -282,18 +322,6 @@ class GUI():
         st.grid(row=2, sticky='ws')
 
         window.mainloop()
-
-
-class ThreadedTask(threading.Thread):
-    def __init__(self, queue, link):
-        threading.Thread.__init__(self)
-        self.queue = queue
-        self.link = link
-
-    def run(self):
-        df = prog.getdownload(self.link)
-        # df = TableModel.getSampleData()
-        self.queue.put(df)
 
 
 if __name__ == "__main__":

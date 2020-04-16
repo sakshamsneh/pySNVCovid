@@ -47,8 +47,9 @@ class covid():
             nx.write_gexf(self.G, loc)
 
     def gen_df(self, dataframe):
-        df = dataframe[['currentstatus', 'dateannounced',
-                        'contractedFrom', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
+        dataframe = dataframe.reindex(columns=['agebracket', 'backupnotes', 'contractedFrom', 'currentstatus', 'dateannounced', 'detectedcity', 'detecteddistrict', 'detectedstate', 'estimatedonsetdate', 'gender', 'nationality', 'notes', 'patientnumber', 'source1', 'source2', 'source3', 'statecode', 'statepatientnumber', 'statuschangedate', 'typeoftransmission'])
+        df = dataframe[['currentstatus', 'dateannounced', 'contractedFrom', 'agebracket', 'detectedcity',
+                        'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
         df.columns = ['status', 'start', 'from', 'age',
                       'city', 'district', 'state', 'gender', 'id', 'end']
         df.index = df['id']
@@ -144,7 +145,7 @@ class covid():
 
     def open_file(self, filename, chk):
         if chk == 0:
-            dataframe = pd.read_csv(filename, index_col=0, encoding = "cp1252")
+            dataframe = pd.read_csv(filename, index_col=0, encoding="cp1252")
             self.gen_df(dataframe)
         elif chk == 1:
             G = nx.read_gexf(filename)
