@@ -8,8 +8,6 @@ from subprocess import Popen
 import queue
 import threading
 
-# import covid as prog
-from func import covid
 from thread import ThreadedTask
 
 
@@ -72,7 +70,7 @@ class GUI():
                     pt.show()
                     pt.redraw()
                     self.set_status("DOWNLOADED!")
-                    window.config(cursor="arrow")
+                    self.window.config(cursor="arrow")
             except queue.Empty:
                 self.window.after(100, process_queue_dldf)
 
@@ -81,7 +79,7 @@ class GUI():
             if not linkTxt.get():
                 self.msg("LINK")
                 return
-            window.config(cursor="wait")
+            self.window.config(cursor="wait")
             # download db using ThreadedTask class, on complete: continue
             self.set_status("DOWNLOADING!")
             self.queue = queue.Queue()
@@ -101,7 +99,7 @@ class GUI():
                 msg = self.queue.get(0)
                 if msg is not None:
                     self.set_status("FILE SAVED AT "+msg.name)
-                    window.config(cursor="arrow")
+                    self.window.config(cursor="arrow")
             except queue.Empty:
                 self.window.after(100, process_queue_scsv)
 
@@ -132,7 +130,7 @@ class GUI():
         f2.grid_propagate(0)    # Resets grid shrink and growth auto
 
         Label(f2, text="SELECT GRAPH TYPE:").grid(column=2, row=2, sticky='w')
-        graph_field = prog.get_graph_field()
+        graph_field = self.prog.get_graph_field()
         graph_type = tk.StringVar(f2)
         graph_type.set(graph_field[0])
         option = OptionMenu(f2, graph_type, *graph_field)
@@ -140,7 +138,7 @@ class GUI():
         option.grid(column=3, row=2)
 
         Label(f2, text="SELECT COLOR FIELD:").grid(column=2, row=3, sticky='w')
-        color_field = prog.get_color_field()
+        color_field = self.prog.get_color_field()
         color_type = tk.StringVar(f2)
         color_type.set(color_field[0])
         optionc = OptionMenu(f2, color_type, *color_field)
@@ -155,7 +153,7 @@ class GUI():
             files = [('Comma Separated Values', '*.csv')]
             open_filename = askopenfilename(filetypes=files)
             if open_filename:
-                prog.open_file(open_filename, 0)
+                self.prog.open_file(open_filename, 0)
                 click_ref()
                 self.set_status("FILE OPENED "+open_filename)
 
@@ -172,7 +170,7 @@ class GUI():
                 save_file = self.queue.get(0)
                 if save_file is not None:
                     self.set_status("FILE SAVED AT "+save_file)
-                    window.config(cursor="arrow")
+                    self.window.config(cursor="arrow")
             except queue.Empty:
                 self.window.after(100, process_queue_sgexf)
 
@@ -194,14 +192,14 @@ class GUI():
                     info.grid(column=3, row=9, sticky='nw')
 
                     self.set_status("GRAPH GENERATED!")
-                    window.config(cursor="arrow")
+                    self.window.config(cursor="arrow")
 
                     files = [('Graph Exchange XML Format', '*.gexf')]
                     save_file = asksaveasfile(
                         filetypes=files, defaultextension=files)
                     if not save_file:
                         return
-                    window.config(cursor="wait")
+                    self.window.config(cursor="wait")
                     self.gexffile = save_file.name
 
                     # save nx graph using ThreadedTask class, on complete: continue
@@ -221,7 +219,7 @@ class GUI():
             elif color_type.get() == "SELECT":
                 self.msg("COLOR TYPE")
                 return
-            window.config(cursor="wait")
+            self.window.config(cursor="wait")
             # generate nx graph using ThreadedTask class, on complete: continue
             self.queue = queue.Queue()
             ThreadedTask(self.queue, self.prog, "gengf",
@@ -237,14 +235,14 @@ class GUI():
 
         # Nested refresh function for ref button
         def click_ref():
-            graph_field = prog.get_graph_field()
+            graph_field = self.prog.get_graph_field()
             option['menu'].delete(0, 'end')
             graph_type.set(graph_field[0])
             for choice in graph_field:
                 option['menu'].add_command(
                     label=choice, command=tk._setit(graph_type, choice))
 
-            color_field = prog.get_color_field()
+            color_field = self.prog.get_color_field()
             optionc['menu'].delete(0, 'end')
             color_type.set(color_field[0])
             for choice in color_field:
@@ -266,7 +264,7 @@ class GUI():
 
         Label(f3, text="GRAPH DETAILS").grid(column=2, row=2, sticky='w')
         info = tk.Text(f3, height=5, width=40)
-        info.insert(tk.END, prog.get_info())
+        info.insert(tk.END, self.prog.get_info())
         info.configure(state=tk.DISABLED)
         info.grid(column=2, row=3, sticky='nw')
 
@@ -275,11 +273,11 @@ class GUI():
 
         # Nested click function for gephi launch
         def click_gephi():
-            window.config(cursor="wait")
+            self.window.config(cursor="wait")
             # run GEPHI
             cmd = 'cmd /c ' + self.gexffile
             Popen(cmd, shell=False)
-            window.config(cursor="arrow")
+            self.window.config(cursor="arrow")
 
         btn_gephi.configure(command=click_gephi)
         btn_gephi.grid(column=2, row=6, sticky='se')
@@ -292,7 +290,7 @@ class GUI():
         def click_ref():
             info.configure(state=tk.NORMAL)
             info.delete('1.0', tk.END)
-            info.insert(tk.END, prog.get_info())
+            info.insert(tk.END, self.prog.get_info())
             info.configure(state=tk.DISABLED)
             self.set_status("REFRESHED!")
 
@@ -308,7 +306,7 @@ class GUI():
             files = [('Graph Exchange XML Format', '*.gexf')]
             open_filename = askopenfilename(filetypes=files)
             if open_filename:
-                infotxt = prog.open_file(open_filename, 1)
+                infotxt = self.prog.open_file(open_filename, 1)
                 self.gexffile = open_filename
                 info.configure(state=tk.NORMAL)
                 info.delete('1.0', tk.END)
@@ -325,7 +323,7 @@ class GUI():
 
     def statusbar(self):
         # Defines a single row statusbar using Label
-        status = Label(window, textvariable=self.statusTxt,
+        status = Label(self.window, textvariable=self.statusTxt,
                        relief=tk.SUNKEN, width=self.frame_w, cursor='hand2')
         return status
 
@@ -334,11 +332,11 @@ class GUI():
         self.statusTxt.set(txt)
 
     def main(self):
-        window.geometry('480x360')
-        window.resizable(0, 0)
-        window.title("pySNV")
+        self.window.geometry('480x360')
+        self.window.resizable(0, 0)
+        self.window.title("pySNV")
 
-        nb = Notebook(window)  # Notebook
+        nb = Notebook(self.window)  # Notebook
         nb.grid(row=1, sticky='nw')
         f1 = self.frame1(nb)
         f2 = self.frame2(nb)
@@ -355,11 +353,4 @@ class GUI():
         st = self.statusbar()   # Creates status bar
         st.grid(row=2, sticky='ws')
 
-        window.mainloop()
-
-
-if __name__ == "__main__":
-    prog = covid()          # Program
-    window = tk.Tk()        # Blank window
-    gui = GUI(prog, window)  # Main Program with both prog and window
-    gui.main()
+        self.window.mainloop()

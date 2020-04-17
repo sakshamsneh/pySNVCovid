@@ -8,3 +8,6 @@ data/
 output/
 extra_code1
 *.ipynb
+build/
+dist/
+*.spec
