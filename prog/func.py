@@ -13,20 +13,20 @@ import colorsys
 
 class covid():
     """
-    GUI class creates GUI for a passed tkinter object and a data program.
-    This class uses ThreadedTask class for parallel processing of results.
-
-    Args: prog: data program instance window: tkinter root instance
+    Code class provides code for dataframe and nx graph generation.
+    This class downloads dataframe and works on them.
     """
-    dataframe = pd.DataFrame()
-    df = pd.DataFrame()
-    G = nx.Graph(name="pySNV")
 
+    # Two blank dataframes, single nx graph
     def __init__(self):
-        pass
+        self.dataframe = pd.DataFrame()
+        self.df = pd.DataFrame()
+        self.G = nx.Graph(name="pySNV")
 
     def getdownload(self, url):
-        # url = 'https://api.covid19india.org/raw_data.json'
+        # Downloads json from url argument, converts into dataframe
+        # Returns first 100 rows of the dataframe.
+        # Example url = 'https://api.covid19india.org/raw_data.json'
         with request.urlopen(url) as response:
             source = response.read()
             data = json.loads(source)
@@ -35,11 +35,13 @@ class covid():
             data['raw_data'], orient='columns')
         dataframe = dataframe.rename(
             columns={'contractedfromwhichpatientsuspected': 'contractedFrom'})
-        # dataframe = dataframe.iloc[:1000]
         self.dataframe = dataframe
         return dataframe.iloc[:100]
 
     def save_df(self, loc, i):
+        # Saves files using file location argument loc
+        # if arg i==0 saves dataframe
+        # else saves nx.gexf
         if i == 0:
             self.dataframe.to_csv(loc)
             self.gen_df(self.dataframe)
@@ -47,7 +49,10 @@ class covid():
             nx.write_gexf(self.G, loc)
 
     def gen_df(self, dataframe):
-        dataframe = dataframe.reindex(columns=['agebracket', 'backupnotes', 'contractedFrom', 'currentstatus', 'dateannounced', 'detectedcity', 'detecteddistrict', 'detectedstate', 'estimatedonsetdate', 'gender', 'nationality', 'notes', 'patientnumber', 'source1', 'source2', 'source3', 'statecode', 'statepatientnumber', 'statuschangedate', 'typeoftransmission'])
+        # Generates compact dataframe from original dataframe
+        # Parses date columns to YYYY-mm-dd format
+        dataframe = dataframe.reindex(columns=['agebracket', 'backupnotes', 'contractedFrom', 'currentstatus', 'dateannounced', 'detectedcity', 'detecteddistrict', 'detectedstate',
+                                               'estimatedonsetdate', 'gender', 'nationality', 'notes', 'patientnumber', 'source1', 'source2', 'source3', 'statecode', 'statepatientnumber', 'statuschangedate', 'typeoftransmission'])
         df = dataframe[['currentstatus', 'dateannounced', 'contractedFrom', 'agebracket', 'detectedcity',
                         'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
         df.columns = ['status', 'start', 'from', 'age',
@@ -76,6 +81,7 @@ class covid():
         self.df = df
 
     def get_color_field(self):
+        # Generates color field list from dataframe columns, sans non colorable columns
         color_field = []
         color_field.append("SELECT")
         if not self.df.empty:
@@ -87,6 +93,7 @@ class covid():
         return color_field
 
     def get_graph_field(self):
+        # Generates graph field list from dataframe columns
         graph_field = []
         graph_field.append("SELECT")
         if not self.df.empty:
@@ -94,6 +101,9 @@ class covid():
         return graph_field
 
     def set_color(self, col_list):
+        # Generates color dict for all unique values in argument column
+        # Creates HSV value list for unique values, converts in RGB value list
+        # Assigns each RGB value to each unique column value
         colord = {}
         N = len(col_list)
         HSV_tuples = [(x*1.0/N, 0.5, 0.5) for x in range(N)]
@@ -108,25 +118,22 @@ class covid():
         return colord
 
     def gen_graph(self, graph_type, color_select):
+        # Generates nx graph from dataframe, color values generated from set_color method
+        # Each id values are nodes, edges are formed from graph_type column value
+        # Subsitute empty date values with current date
         df = self.df
         color = df[color_select].unique()
         colord = self.set_color(color)
 
         edgelist = []
         for index, row in df.iterrows():
-            s = row['start']
-            e = row['end']
-            t = row['id']
             f = row[graph_type]
             if f:
-                edgelist.append([t, f, s, e])
+                t = row['id']
+                edgelist.append([t, f])
 
         for index, row in df.iterrows():
             s = row['start']
-            if pd.isnull(s):
-                e = dt.datetime.today().strftime("%Y-%m-%d")
-            else:
-                s = row['start']
             e = row['end']
             if pd.isnull(e):
                 e = dt.datetime.today().strftime("%Y-%m-%d")
@@ -135,15 +142,19 @@ class covid():
             self.G.add_node(row['id'], start=s, end=e,
                             color=colord.get(row[color_select], 'black'))
 
-        data = pd.DataFrame(edgelist, columns=['u1', 'u2', 's', 'e'])
+        data = pd.DataFrame(edgelist, columns=['u1', 'u2'])
         for index, row in data.iterrows():
             self.G.add_edge(row['u2'], row['u1'])
         return colord
 
     def get_info(self):
+        # Returns nx information of graph G
         return nx.info(self.G)
 
     def open_file(self, filename, chk):
+        # Opens file using file location argument filename
+        # if arg chk==0 opens dataframe
+        # else reads nx.gexf
         if chk == 0:
             dataframe = pd.read_csv(filename, index_col=0, encoding="cp1252")
             self.gen_df(dataframe)

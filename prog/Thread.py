@@ -4,6 +4,13 @@ from pandastable import TableModel
 
 
 class ThreadedTask(threading.Thread):
+    """
+    ThreadedTask class creates multiprocessing instance for multiple tasks.
+    This class uses threading class for multiprocessing.
+
+    Args: queue: queue instance prog: data program instance task: working statement *arg: args required for task
+    """
+
     def __init__(self, queue, prog, task, *arg):
         threading.Thread.__init__(self)
         self.queue = queue
