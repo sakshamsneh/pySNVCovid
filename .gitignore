@@ -11,3 +11,4 @@ extra_code1
 build/
 dist/
 *.spec
+*.ico

@@ -47,8 +47,7 @@ class covid():
     def gen_df(self, dataframe):
         # Generates compact dataframe from original dataframe
         # Parses date columns to YYYY-mm-dd format
-        dataframe = dataframe.reindex(columns=['agebracket', 'backupnotes', 'contractedFrom', 'currentstatus', 'dateannounced', 'detectedcity', 'detecteddistrict', 'detectedstate',
-                                               'estimatedonsetdate', 'gender', 'nationality', 'notes', 'patientnumber', 'source1', 'source2', 'source3', 'statecode', 'statepatientnumber', 'statuschangedate', 'typeoftransmission'])
+        dataframe = dataframe.reindex(columns=list(dataframe.columns))
         df = dataframe[['currentstatus', 'dateannounced', 'contractedFrom', 'agebracket', 'detectedcity',
                         'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
         df.columns = ['status', 'start', 'from', 'age',
