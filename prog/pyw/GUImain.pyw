@@ -330,10 +330,40 @@ class GUI():
         # Sets status by changing statusbar Label textvariable
         self.statusTxt.set(txt)
 
+    def helpscreen(self):
+        # Creates help window
+        helpsc = tk.Toplevel(self.window)
+        helpsc.geometry('300x300')
+        helpsc.transient()
+        helpsc.title('HELP')
+        help_txt="""Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."""
+        tk.Message(helpsc, text=help_txt).pack()
+
+    def aboutscreen(self):
+        # Creates about window
+        aboutsc = tk.Toplevel(self.window)
+        aboutsc.geometry('300x300')
+        aboutsc.transient()
+        aboutsc.title('ABOUT')
+        help_txt="""Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."""
+        tk.Message(aboutsc, text=help_txt).pack()
+
+    def menubar(self):
+        menubar = tk.Menu(self.window)
+        helpmenu = tk.Menu(menubar, tearoff=0)
+        helpmenu.add_command(label="Help", command=self.helpscreen)
+        helpmenu.add_command(label="About", command=self.aboutscreen)
+        menubar.add_cascade(label="App", menu=helpmenu)
+
+        return menubar
+
     def main(self):
         self.window.geometry('480x360')
         self.window.resizable(0, 0)
         self.window.title("pySNV")
+
+        menubar = self.menubar()
+        self.window.config(menu=menubar)
 
         nb = Notebook(self.window)  # Notebook
         nb.grid(row=1, sticky='nw')

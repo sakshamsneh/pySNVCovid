@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import datetime as dt
 import urllib.request as request
 import networkx as nx
@@ -29,8 +30,6 @@ class covid():
         # Converting dict to dataframe
         dataframe = pd.DataFrame.from_dict(
             data['raw_data'], orient='columns')
-        dataframe = dataframe.rename(
-            columns={'contractedfromwhichpatientsuspected': 'contractedFrom'})
         self.dataframe = dataframe
         return dataframe.iloc[:100]
 
@@ -48,30 +47,34 @@ class covid():
         # Generates compact dataframe from original dataframe
         # Parses date columns to YYYY-mm-dd format
         dataframe = dataframe.reindex(columns=list(dataframe.columns))
-        df = dataframe[['currentstatus', 'dateannounced', 'contractedFrom', 'agebracket', 'detectedcity',
-                        'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
-        df.columns = ['status', 'start', 'from', 'age',
-                      'city', 'district', 'state', 'gender', 'id', 'end']
-        df.index = df['id']
-        df['start'] = df['start'].apply(lambda x: dt.datetime.today().strftime(
+        # df = dataframe[['currentstatus', 'dateannounced', 'contractedfromwhichpatientsuspected', 'agebracket', 'detectedcity',
+        #                 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
+        df = dataframe[list(dataframe.columns)].copy()
+        # df.columns = ['currentstatus', 'dateannounced', 'contractedfromwhichpatientsuspected', 'agebracket',
+        #               'detectedcity', 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']
+        df.index = df['patientnumber']
+        df['dateannounced'] = df['dateannounced'].apply(lambda x: dt.datetime.today().strftime(
             "%d/%m/%Y") if pd.isnull(pd.to_datetime(x)) else x)
-        df['start'] = pd.to_datetime(df['start'], format="%d/%m/%Y")
-        df['start'] = df['start'].apply(lambda x: x.strftime("%Y-%m-%d"))
+        df['dateannounced'] = pd.to_datetime(
+            df['dateannounced'], format="%d/%m/%Y")
+        df['dateannounced'] = df['dateannounced'].apply(
+            lambda x: x.strftime("%Y-%m-%d"))
 
-        df['end'] = pd.to_datetime(
-            df['end'], format="%d/%m/%Y", errors='coerce')
-        df['end'] = df['end'].apply(lambda x: x.strftime(
+        df['statuschangedate'] = pd.to_datetime(
+            df['statuschangedate'], format="%d/%m/%Y", errors='coerce')
+        df['statuschangedate'] = df['statuschangedate'].apply(lambda x: x.strftime(
             "%Y-%m-%d") if not pd.isnull(x) else x)
         for i, r in df.iterrows():
-            if r['start'] > r['end']:
-                r['end'] = pd.NaT
+            if r['dateannounced'] > r['statuschangedate']:
+                r['statuschangedate'] = pd.NaT
 
-        df['from'] = df['from'].apply(lambda x: re.sub('P', '', str(x)))
-        df['from'] = df['from'].apply(
+        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
+            lambda x: re.sub('P', '', str(x)))
+        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
             lambda x: x.split(",")[0] if ", " in x else x)
-        df = df[['id', 'from',  'start', 'end', 'status',
-                 'gender', 'age', 'city', 'district', 'state']]
-        df['from'] = df['from'].apply(
+        df = df[['patientnumber', 'contractedfromwhichpatientsuspected',  'dateannounced', 'statuschangedate', 'currentstatus',
+                 'gender', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate']]
+        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
             lambda x: abs(int(x)) if x.isnumeric() else '')
         self.df = df
 
@@ -81,10 +84,10 @@ class covid():
         color_field.append("SELECT")
         if not self.df.empty:
             color_field = list(self.df.columns)
-            color_field.remove('id')
-            color_field.remove('from')
-            color_field.remove('start')
-            color_field.remove('end')
+            color_field.remove('patientnumber')
+            color_field.remove('contractedfromwhichpatientsuspected')
+            color_field.remove('dateannounced')
+            color_field.remove('statuschangedate')
         return color_field
 
     def get_graph_field(self):
@@ -124,17 +127,17 @@ class covid():
         for index, row in df.iterrows():
             f = row[graph_type]
             if f:
-                t = row['id']
+                t = row['patientnumber']
                 edgelist.append([t, f])
 
         for index, row in df.iterrows():
-            s = row['start']
-            e = row['end']
+            s = row['dateannounced']
+            e = row['statuschangedate']
             if pd.isnull(e):
                 e = dt.datetime.today().strftime("%Y-%m-%d")
             else:
-                e = row['end']
-            self.G.add_node(row['id'], start=s, end=e,
+                e = row['statuschangedate']
+            self.G.add_node(row['patientnumber'], start=s, end=e,
                             color=colord.get(row[color_select], 'black'))
 
         data = pd.DataFrame(edgelist, columns=['u1', 'u2'])
