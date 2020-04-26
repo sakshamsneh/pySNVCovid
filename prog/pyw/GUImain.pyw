@@ -6,6 +6,8 @@ from pandastable import Table, TableModel
 import pandas as pd
 from subprocess import Popen
 import queue
+import webbrowser
+import pyperclip
 
 from thread import ThreadedTask
 
@@ -330,29 +332,54 @@ class GUI():
         # Sets status by changing statusbar Label textvariable
         self.statusTxt.set(txt)
 
-    def helpscreen(self):
+    def getlink(self, *arg):
+        # Copy link to clipboard
+        pyperclip.copy('https://api.covid19india.org/raw_data.json')
+        self.set_status("LINK COPIED TO CLIPBOARD!")
+
+    def helpscreen(self, *arg):
         # Creates help window
         helpsc = tk.Toplevel(self.window)
         helpsc.geometry('300x300')
         helpsc.transient()
+        helpsc.focus_set()
         helpsc.title('HELP')
-        help_txt="""Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."""
-        tk.Message(helpsc, text=help_txt).pack()
+        help_txt = """\nTabs:\n1.DOWNLOAD: Download, view first 100 rows and save dataframe as CSV\n2.SELECT: Select graph type, node color field, and view the color assigned, save the generated graph file as GEXF\n3.DISPLAY: Check the graph attributes, open the file in gephi(installation required for viewing graph).\n\n Open CSV, GEXF file directly for viewing results."""
+        Label(helpsc, text=help_txt, justify=tk.LEFT, wraplength=250).pack()
 
-    def aboutscreen(self):
+        # LINK button
+        Button(helpsc, text="COPY LINK", command=self.getlink).pack()
+
+    def aboutscreen(self, *arg):
         # Creates about window
         aboutsc = tk.Toplevel(self.window)
         aboutsc.geometry('300x300')
         aboutsc.transient()
+        aboutsc.focus_set()
         aboutsc.title('ABOUT')
-        help_txt="""Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."""
-        tk.Message(aboutsc, text=help_txt).pack()
+        about_txt = """\nPYSNV\n\nVersion:1.3\n\nThis software creates dynamic network graph from csv.\n"""
+        Label(aboutsc, text=about_txt, justify=tk.CENTER, wraplength=250).pack()
+
+        # LINK button start
+        btn_link = Button(aboutsc, text="CHECK WEBSITE")
+
+        # Nested function for link button to open website
+        def click_link():
+            webbrowser.open('https://github.com/sakshamsneh/pySNVCovid')
+
+        btn_link.configure(command=click_link)
+        btn_link.pack()
+        # LINK button end
 
     def menubar(self):
         menubar = tk.Menu(self.window)
         helpmenu = tk.Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="Help", command=self.helpscreen)
-        helpmenu.add_command(label="About", command=self.aboutscreen)
+        helpmenu.add_command(label="Sample Link",
+                             command=self.getlink, accelerator="Ctrl+l")
+        helpmenu.add_command(
+            label="Help", command=self.helpscreen, accelerator="Ctrl+h")
+        helpmenu.add_command(
+            label="About", command=self.aboutscreen, accelerator="Ctrl+a")
         menubar.add_cascade(label="App", menu=helpmenu)
 
         return menubar
@@ -375,6 +402,11 @@ class GUI():
         nb.add(f1, text="DOWNLOAD")
         nb.add(f2, text="SELECT")
         nb.add(f3, text="DISPLAY")
+
+        # self.window.bind('<Control-q>', self.window.destroy)
+        self.window.bind('<Control-l>', self.getlink)
+        self.window.bind('<Control-h>', self.helpscreen)
+        self.window.bind('<Control-a>', self.aboutscreen)
 
         nb.select(f1)
         nb.enable_traversal()
