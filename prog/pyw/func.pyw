@@ -6,6 +6,7 @@ import networkx as nx
 import json
 import re
 import colorsys
+import matplotlib.pyplot as plt
 
 
 class covid():
@@ -156,6 +157,13 @@ class covid():
         if chk == 0:
             dataframe = pd.read_csv(filename, index_col=0, encoding="cp1252")
             self.gen_df(dataframe)
+            return self.get_graph_field()
         elif chk == 1:
             G = nx.read_gexf(filename)
             return nx.info(G)
+
+    def get_df(self, graph_fields):
+        # Creates static graph from gtype and args
+        # Returns values to generate and show graph
+        df=self.df[graph_fields].copy()
+        return df

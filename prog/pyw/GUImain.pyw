@@ -8,6 +8,8 @@ from subprocess import Popen
 import queue
 import webbrowser
 import pyperclip
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from thread import ThreadedTask
 
@@ -322,6 +324,101 @@ class GUI():
         self.grid_config(f3)
         return f3
 
+    def showmatgraph(self, df, graph_type):
+        # Generates matplotlib graph in separate dialog
+        plotsc = tk.Toplevel(self.window)
+        plotsc.geometry('400x400')
+        plotsc.transient()
+        plotsc.focus_set()
+        plotsc.title('STATIC GRAPH')
+        self.window.config(cursor="arrow")
+
+        if graph_type == 'line':
+            figure = plt.Figure(figsize=(6, 5), dpi=100)
+            ax = figure.add_subplot(111)
+            chart_type = FigureCanvasTkAgg(figure, plotsc)
+            chart_type.get_tk_widget().pack()
+            # df = df[['First Column','Second Column']].groupby('First Column').sum()
+            # df=df.iloc[:,1:].groupby(df.columns[1])
+            df.plot(kind='line', legend=True, ax=ax)
+            ax.set_title(graph_type)
+
+    def frame4(self, nb):
+        # Generates STATIC GRAPH frame and returns
+        f4 = Frame(nb, width=self.frame_w, height=self.frame_h)
+        f4.grid_propagate(0)    # Resets grid shrink and growth auto
+
+        Label(f4, text="SELECT GRAPH COLUMNS").grid(
+            column=2, row=2, sticky='w')
+        col_list = tk.Listbox(f4, height=5, width=60, selectmode=tk.EXTENDED)
+        col_list.insert(tk.END, self.prog.get_graph_field())
+        col_list.grid(column=2, row=3, sticky='nw')
+
+        Label(f4, text="SELECT GRAPH TYPE:").grid(column=2, row=2, sticky='w')
+        graph_field = ['SELECT', 'line', 'scatter', 'pie']
+        graph_type = tk.StringVar(f4)
+        graph_type.set(graph_field[0])
+        option = OptionMenu(f4, graph_type, *graph_field)
+        option.config(width=40)
+        option.grid(column=3, row=2)
+
+        # GRAPH button start
+        btn_graph = Button(f4, text="GENERATE GRAPH")
+
+        # Nested click function for gephi launch
+        def click_graph():
+            self.window.config(cursor="wait")
+            # get dataframe and generate graph
+            slist = []
+            for i in col_list.curselection():
+                slist.append(col_list.get(i))
+            if not slist:
+                self.msg("COLUMNS")
+                return
+            elif graph_type.get() == "SELECT":
+                self.msg("GRAPH TYPE")
+                return
+            df = self.prog.get_df(slist)
+            self.showmatgraph(df, graph_type.get())
+
+        btn_graph.configure(command=click_graph)
+        btn_graph.grid(column=2, row=6, sticky='se')
+        # GRAPH button end
+
+        # REFRESH button start
+        btn_ref = Button(f4, text="REFRESH")
+
+        # Nested refresh function for ref button
+        def click_ref():
+            collist = self.prog.get_graph_field()
+            col_list.delete(0, tk.END)
+            col_list.insert(tk.END, *collist)
+            self.set_status("REFRESHED!")
+
+        btn_ref.configure(command=click_ref)
+        btn_ref.grid(column=2, row=6, sticky='ws')
+        # REFRESH button end
+
+        # OPEN button start
+        btn_open = Button(f4, text="OPEN")
+
+        # Nested refresh function for open button
+        def click_open():
+            files = [('Comma Separated Values', '*.csv')]
+            open_filename = askopenfilename(filetypes=files)
+            if open_filename:
+                collist = self.prog.open_file(open_filename, 0)
+                col_list.delete(0, tk.END)
+                col_list.insert(tk.END, *collist)
+                self.set_status("FILE OPENED "+open_filename)
+
+        btn_open.configure(command=click_open)
+        btn_open.grid(column=2, row=1, sticky='wn')
+        # OPEN button end
+
+        self.grid_config(f4)
+        return f4
+
     def statusbar(self):
         # Defines a single row statusbar using Label
         status = Label(self.window, textvariable=self.statusTxt,
@@ -397,11 +494,13 @@ class GUI():
         f1 = self.frame1(nb)
         f2 = self.frame2(nb)
         f3 = self.frame3(nb)
+        f4 = self.frame4(nb)
 
         # Adding three frames
         nb.add(f1, text="DOWNLOAD")
         nb.add(f2, text="SELECT")
         nb.add(f3, text="DISPLAY")
+        nb.add(f4, text="STATIC GRAPH")
 
         # self.window.bind('<Control-q>', self.window.destroy)
         self.window.bind('<Control-l>', self.getlink)
