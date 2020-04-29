@@ -73,8 +73,8 @@ class covid():
             lambda x: re.sub('P', '', str(x)))
         df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
             lambda x: x.split(",")[0] if ", " in x else x)
-        df = df[['patientnumber', 'contractedfromwhichpatientsuspected',  'dateannounced', 'statuschangedate', 'currentstatus',
-                 'gender', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate']]
+        # df = df[['patientnumber', 'contractedfromwhichpatientsuspected',  'dateannounced', 'statuschangedate', 'currentstatus',
+        #          'gender', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate']]
         df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
             lambda x: abs(int(x)) if x.isnumeric() else '')
         self.df = df

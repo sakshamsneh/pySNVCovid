@@ -324,80 +324,43 @@ class GUI():
         self.grid_config(f3)
         return f3
 
-    def showmatgraph(self, df, graph_type):
+    def showmatgraph(self, df, graph_type, legend, subplots, stacked):
         # Generates matplotlib graph in separate dialog
         plotsc = tk.Toplevel(self.window)
-        plotsc.geometry('400x400')
+        plotsc.geometry('600x600')
         plotsc.transient()
         plotsc.focus_set()
         plotsc.title('STATIC GRAPH')
-        self.window.config(cursor="arrow")
 
-        if graph_type == 'line':
-            figure = plt.Figure(figsize=(6, 5), dpi=100)
-            ax = figure.add_subplot(111)
-            chart_type = FigureCanvasTkAgg(figure, plotsc)
-            chart_type.get_tk_widget().pack()
-            # df = df[['First Column','Second Column']].groupby('First Column').sum()
-            # df=df.iloc[:,1:].groupby(df.columns[1])
-            df.plot(kind='line', legend=True, ax=ax)
-            ax.set_title(graph_type)
+        figure = plt.Figure(figsize=(8, 8), dpi=100)
+        ax = figure.add_subplot(111)
+        chart_type = FigureCanvasTkAgg(figure, plotsc)
+        chart_type.get_tk_widget().pack()
+        ax.set_title(graph_type)
+        graph_col = list(df.columns.values)
+
+        if 'dateannounced' in graph_col:
+            graph_col.insert(0, graph_col.pop(graph_col.index('dateannounced')))
+            df = df[graph_col]
+
+        if graph_type == 'bar':
+            df.groupby(graph_col).size().unstack(fill_value=0).plot(
+                kind='bar', legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+        elif graph_type == 'barh':
+            df.groupby(graph_col).size().unstack(
+                fill_value=0).plot(kind='barh', legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+        elif graph_type == 'pie':
+            df.groupby(graph_col)[graph_col].count().plot(
+                kind='pie', legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+        elif graph_type == 'line':
+            df.groupby([graph_col[0], graph_col[1]]).size().unstack(fill_value=0).plot(
+                kind='line', rot=90, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+        self.window.config(cursor="arrow")
 
     def frame4(self, nb):
         # Generates STATIC GRAPH frame and returns
         f4 = Frame(nb, width=self.frame_w, height=self.frame_h)
         f4.grid_propagate(0)    # Resets grid shrink and growth auto
-
-        Label(f4, text="SELECT GRAPH COLUMNS").grid(
-            column=2, row=2, sticky='w')
-        col_list = tk.Listbox(f4, height=5, width=60, selectmode=tk.EXTENDED)
-        col_list.insert(tk.END, self.prog.get_graph_field())
-        col_list.grid(column=2, row=3, sticky='nw')
-
-        Label(f4, text="SELECT GRAPH TYPE:").grid(column=2, row=2, sticky='w')
-        graph_field = ['SELECT', 'line', 'scatter', 'pie']
-        graph_type = tk.StringVar(f4)
-        graph_type.set(graph_field[0])
-        option = OptionMenu(f4, graph_type, *graph_field)
-        option.config(width=40)
-        option.grid(column=3, row=2)
-
-        # GRAPH button start
-        btn_graph = Button(f4, text="GENERATE GRAPH")
-
-        # Nested click function for gephi launch
-        def click_graph():
-            self.window.config(cursor="wait")
-            # get dataframe and generate graph
-            slist = []
-            for i in col_list.curselection():
-                slist.append(col_list.get(i))
-            if not slist:
-                self.msg("COLUMNS")
-                return
-            elif graph_type.get() == "SELECT":
-                self.msg("GRAPH TYPE")
-                return
-            df = self.prog.get_df(slist)
-            self.showmatgraph(df, graph_type.get())
-
-        btn_graph.configure(command=click_graph)
-        btn_graph.grid(column=2, row=6, sticky='se')
-        # GRAPH button end
-
-        # REFRESH button start
-        btn_ref = Button(f4, text="REFRESH")
-
-        # Nested refresh function for ref button
-        def click_ref():
-            collist = self.prog.get_graph_field()
-            col_list.delete(0, tk.END)
-            col_list.insert(tk.END, *collist)
-            self.set_status("REFRESHED!")
-
-        btn_ref.configure(command=click_ref)
-        btn_ref.grid(column=2, row=6, sticky='ws')
-        # REFRESH button end
 
         # OPEN button start
         btn_open = Button(f4, text="OPEN")
@@ -415,6 +378,103 @@ class GUI():
         btn_open.configure(command=click_open)
         btn_open.grid(column=2, row=1, sticky='wn')
         # OPEN button end
+
+        Label(f4, text="SELECT GRAPH TYPE:").grid(column=2, row=2, sticky='w')
+        graph_field = ['SELECT', 'line', 'pie', 'bar', 'barh']
+        graph_type = tk.StringVar(f4)
+        graph_type.set(graph_field[0])
+        option = OptionMenu(f4, graph_type, *graph_field)
+        option.config(width=35)
+        option.grid(column=2, row=3, sticky='s')
+        graph_field_select_mode = tk.EXTENDED
+
+        Label(f4, text="SELECT GRAPH COLUMNS:").grid(
+            column=2, row=4, sticky='w')
+        col_list = tk.Listbox(f4, height=5, width=40,
+                              selectmode=graph_field_select_mode)
+        col_list.insert(tk.END, self.prog.get_graph_field())
+        col_list.grid(column=2, row=5, sticky='nw')
+
+        # trace method for graph_type
+        def graphchange(var, indx, mode):
+            gtype = graph_type.get()
+            if gtype == 'pie':
+                graph_field_select_mode = tk.SINGLE
+            else:
+                graph_field_select_mode = tk.EXTENDED
+            col_list.config(selectmode=graph_field_select_mode)
+
+        graph_type.trace_add('write', graphchange)
+
+        Label(f4, text="OPTIONS:").grid(column=4, row=2, sticky='w')
+        legend = tk.BooleanVar()
+        legend.set(False)
+        Checkbutton(f4, text="LEGEND", variable=legend).grid(
+            column=4, row=3, sticky='nwe')
+        subplots = tk.BooleanVar()
+        subplots.set(False)
+        Checkbutton(f4, text="SUBPLOTS", variable=subplots).grid(
+            column=4, row=4, sticky='nwe')
+        stacked = tk.BooleanVar()
+        stacked.set(False)
+        Checkbutton(f4, text="STACKED", variable=stacked).grid(
+            column=4, row=5, sticky='nwe')
+        reverse = tk.BooleanVar()
+        reverse.set(False)
+        Checkbutton(f4, text="REVERSE", variable=reverse).grid(
+            column=4, row=6, sticky='nwe')
+
+        # trace method for subplots
+        def optionsubplot(var, indx, mode):
+            if subplots.get() == True and stacked.get() == True:
+                stacked.set(False)
+
+        # trace method for stacked
+        def optionstacked(var, indx, mode):
+            if subplots.get() == True and stacked.get() == True:
+                subplots.set(False)
+        subplots.trace_add('write', optionsubplot)
+        stacked.trace_add('write', optionstacked)
+
+        # GRAPH button start
+        btn_graph = Button(f4, text="GENERATE GRAPH")
+
+        # Nested click function for gephi launch
+        def click_graph():
+            self.window.config(cursor="wait")
+            # get dataframe and generate graph
+            slist = []
+            for i in col_list.curselection():
+                slist.append(col_list.get(i))
+            if reverse.get():
+                slist.reverse()
+            if not slist:
+                self.msg("COLUMNS")
+                return
+            elif graph_type.get() == "SELECT":
+                self.msg("GRAPH TYPE")
+                return
+            df = self.prog.get_df(slist)
+            self.showmatgraph(df, graph_type.get(), legend.get(),
+                              subplots.get(), stacked.get())
+
+        btn_graph.configure(command=click_graph)
+        btn_graph.grid(column=4, row=7, sticky='s')
+        # GRAPH button end
+
+        # REFRESH button start
+        btn_ref = Button(f4, text="REFRESH")
+
+        # Nested refresh function for ref button
+        def click_ref():
+            collist = self.prog.get_graph_field()
+            col_list.delete(0, tk.END)
+            col_list.insert(tk.END, *collist)
+            self.set_status("REFRESHED!")
+
+        btn_ref.configure(command=click_ref)
+        btn_ref.grid(column=2, row=7, sticky='ws')
+        # REFRESH button end
 
         self.grid_config(f4)
         return f4
@@ -441,7 +501,7 @@ class GUI():
         helpsc.transient()
         helpsc.focus_set()
         helpsc.title('HELP')
-        help_txt = """\nTabs:\n1.DOWNLOAD: Download, view first 100 rows and save dataframe as CSV\n2.SELECT: Select graph type, node color field, and view the color assigned, save the generated graph file as GEXF\n3.DISPLAY: Check the graph attributes, open the file in gephi(installation required for viewing graph).\n\n Open CSV, GEXF file directly for viewing results."""
+        help_txt = """\nTabs:\n1.DOWNLOAD: Download, view first 100 rows and save dataframe as CSV\n2.SELECT: Select graph type, node color field, and view the color assigned, save the generated graph file as GEXF\n3.DISPLAY: Check the graph attributes, open the file in gephi(installation required for viewing graph).\n4.STATIC GRAPH: Select graph type, graph fields, options and generate static graph.\n\n Open CSV, GEXF file directly for viewing results."""
         Label(helpsc, text=help_txt, justify=tk.LEFT, wraplength=250).pack()
 
         # LINK button
@@ -454,7 +514,7 @@ class GUI():
         aboutsc.transient()
         aboutsc.focus_set()
         aboutsc.title('ABOUT')
-        about_txt = """\nPYSNV\n\nVersion:1.3\n\nThis software creates dynamic network graph from csv.\n"""
+        about_txt = """\nPYSNV\n\nVersion:1.3\n\nThis software creates dynamic network graph from csv.\n\nPackages:Networkx, matplotlib, pandas, tkinter.\n\n"""
         Label(aboutsc, text=about_txt, justify=tk.CENTER, wraplength=250).pack()
 
         # LINK button start
@@ -476,7 +536,7 @@ class GUI():
         helpmenu.add_command(
             label="Help", command=self.helpscreen, accelerator="Ctrl+h")
         helpmenu.add_command(
-            label="About", command=self.aboutscreen, accelerator="Ctrl+a")
+            label="About", command=self.aboutscreen, accelerator="Ctrl+Shift+a")
         menubar.add_cascade(label="App", menu=helpmenu)
 
         return menubar
@@ -502,10 +562,9 @@ class GUI():
         nb.add(f3, text="DISPLAY")
         nb.add(f4, text="STATIC GRAPH")
 
-        # self.window.bind('<Control-q>', self.window.destroy)
         self.window.bind('<Control-l>', self.getlink)
         self.window.bind('<Control-h>', self.helpscreen)
-        self.window.bind('<Control-a>', self.aboutscreen)
+        self.window.bind('<Control-A>', self.aboutscreen)
 
         nb.select(f1)
         nb.enable_traversal()
