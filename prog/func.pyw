@@ -169,6 +169,7 @@ class covid():
         return df
 
     def get_daterange(self):
+        # Returns daterange of data
         s=self.df.iloc[0]['dateannounced']
         s=dt.datetime.strptime(s, "%Y-%m-%d")
         e=self.df.iloc[-1]['dateannounced']
