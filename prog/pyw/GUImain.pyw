@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from thread import ThreadedTask
+import ListBox as lb
 
 
 class GUI():
@@ -339,10 +340,6 @@ class GUI():
         ax.set_title(graph_type)
         graph_col = list(df.columns.values)
 
-        if 'dateannounced' in graph_col:
-            graph_col.insert(0, graph_col.pop(graph_col.index('dateannounced')))
-            df = df[graph_col]
-
         if graph_type == 'bar':
             df.groupby(graph_col).size().unstack(fill_value=0).plot(
                 kind='bar', legend=legend, stacked=stacked, ax=ax, subplots=subplots)
@@ -390,8 +387,8 @@ class GUI():
 
         Label(f4, text="SELECT GRAPH COLUMNS:").grid(
             column=2, row=4, sticky='w')
-        col_list = tk.Listbox(f4, height=5, width=40,
-                              selectmode=graph_field_select_mode)
+        col_list = lb.Listbox2(f4, height=5, width=40,
+                               selectmode=graph_field_select_mode)
         col_list.insert(tk.END, self.prog.get_graph_field())
         col_list.grid(column=2, row=5, sticky='nw')
 
@@ -419,10 +416,6 @@ class GUI():
         stacked.set(False)
         Checkbutton(f4, text="STACKED", variable=stacked).grid(
             column=4, row=5, sticky='nwe')
-        reverse = tk.BooleanVar()
-        reverse.set(False)
-        Checkbutton(f4, text="REVERSE", variable=reverse).grid(
-            column=4, row=6, sticky='nwe')
 
         # trace method for subplots
         def optionsubplot(var, indx, mode):
@@ -446,8 +439,6 @@ class GUI():
             slist = []
             for i in col_list.curselection():
                 slist.append(col_list.get(i))
-            if reverse.get():
-                slist.reverse()
             if not slist:
                 self.msg("COLUMNS")
                 return
@@ -501,7 +492,7 @@ class GUI():
         helpsc.transient()
         helpsc.focus_set()
         helpsc.title('HELP')
-        help_txt = """\nTabs:\n1.DOWNLOAD: Download, view first 100 rows and save dataframe as CSV\n2.SELECT: Select graph type, node color field, and view the color assigned, save the generated graph file as GEXF\n3.DISPLAY: Check the graph attributes, open the file in gephi(installation required for viewing graph).\n4.STATIC GRAPH: Select graph type, graph fields, options and generate static graph.\n\n Open CSV, GEXF file directly for viewing results."""
+        help_txt = """\nTabs:\n1.DOWNLOAD: Download, view first 100 rows and save dataframe as CSV\n2.SELECT: Select graph type, node color field, and view the color assigned, save the generated graph file as GEXF\n3.DISPLAY: Check the graph attributes, open the file in gephi(installation required for viewing graph).\n4.STATIC GRAPH: Select graph type, graph fields(& reorder them), options and generate static graph.\n\n Open CSV, GEXF file directly for viewing results."""
         Label(helpsc, text=help_txt, justify=tk.LEFT, wraplength=250).pack()
 
         # LINK button
