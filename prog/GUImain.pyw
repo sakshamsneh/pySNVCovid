@@ -3,6 +3,7 @@ from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter.filedialog import asksaveasfile, askopenfilename
 from pandastable import Table, TableModel
+from tkcalendar import Calendar, DateEntry
 import pandas as pd
 from subprocess import Popen
 import queue
@@ -165,6 +166,13 @@ class GUI():
         btn_open.grid(column=2, row=1, sticky='wn')
         # OPEN button end
 
+        Label(f2, text="SELECT DATE RANGE:").grid(column=2, row=4, sticky='w')
+        # get start and end date in row 5
+        calstart = DateEntry(f2, date_pattern="y-mm-dd", state=tk.DISABLED)
+        calstart.grid(column=2, row=5, sticky='w')
+        calend = DateEntry(f2, date_pattern="y-mm-dd", state=tk.DISABLED)
+        calend.grid(column=3, row=5, sticky='e')
+
         # GENERATE button start
         btn_gen = Button(f2, text="GENERATE")
 
@@ -188,12 +196,12 @@ class GUI():
                         color += str(k)+":"+str(colord.get(k))+"\n"
 
                     Label(f2, text="COLOR DETAILS").grid(
-                        column=2, row=8, sticky='w')
+                        column=2, row=9, sticky='w')
                     info = tk.Text(f2, height=5, width=30)
                     info.configure(state=tk.NORMAL)
                     info.insert(tk.END, color)
                     info.configure(state=tk.DISABLED)
-                    info.grid(column=3, row=9, sticky='nw')
+                    info.grid(column=3, row=10, sticky='nw')
 
                     self.set_status("GRAPH GENERATED!")
                     self.window.config(cursor="arrow")
@@ -227,11 +235,11 @@ class GUI():
             # generate nx graph using ThreadedTask class, on complete: continue
             self.queue = queue.Queue()
             ThreadedTask(self.queue, self.prog, "gengf",
-                         graph_type.get(), color_type.get()).start()
+                         graph_type.get(), color_type.get(), calstart.get_date(), calend.get_date()).start()
             self.window.after(100, process_queue_gengf)
 
         btn_gen.configure(command=click_gen)
-        btn_gen.grid(column=3, row=5, sticky='se')
+        btn_gen.grid(column=3, row=7, sticky='se')
         # GENERATE button end
 
         # REFRESH button start
@@ -240,6 +248,11 @@ class GUI():
         # Nested refresh function for ref button
         def click_ref():
             graph_field = self.prog.get_graph_field()
+
+            start, end=self.prog.get_daterange()
+            calstart.config(state=tk.NORMAL, mindate=start, maxdate=end)
+            calend.config(state=tk.NORMAL, mindate=start, maxdate=end)
+
             option['menu'].delete(0, 'end')
             graph_type.set(graph_field[0])
             for choice in graph_field:
@@ -255,7 +268,7 @@ class GUI():
             self.set_status("REFRESHED!")
 
         btn_ref.configure(command=click_ref)
-        btn_ref.grid(column=2, row=5, sticky='ws')
+        btn_ref.grid(column=2, row=7, sticky='ws')
         # REFRESH button end
 
         self.grid_config(f2)
@@ -333,7 +346,7 @@ class GUI():
         plotsc.focus_set()
         plotsc.title('STATIC GRAPH')
 
-        figure = plt.Figure(figsize=(8, 8), dpi=100)
+        figure = plt.Figure(figsize=(6, 6), dpi=100)
         ax = figure.add_subplot(111)
         chart_type = FigureCanvasTkAgg(figure, plotsc)
         chart_type.get_tk_widget().pack()
@@ -342,16 +355,16 @@ class GUI():
 
         if graph_type == 'bar':
             df.groupby(graph_col).size().unstack(fill_value=0).plot(
-                kind='bar', legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+                kind='bar', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
         elif graph_type == 'barh':
             df.groupby(graph_col).size().unstack(
-                fill_value=0).plot(kind='barh', legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+                fill_value=0).plot(kind='barh', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
         elif graph_type == 'pie':
             df.groupby(graph_col)[graph_col].count().plot(
-                kind='pie', legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+                kind='pie', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
         elif graph_type == 'line':
             df.groupby([graph_col[0], graph_col[1]]).size().unstack(fill_value=0).plot(
-                kind='line', rot=90, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+                kind='line', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
         self.window.config(cursor="arrow")
 
     def frame4(self, nb):
@@ -497,6 +510,18 @@ class GUI():
 
         # LINK button
         Button(helpsc, text="COPY LINK", command=self.getlink).pack()
+
+        # GEPHI_DOWNLOAD button start
+        btn_link = Button(helpsc, text="DOWNLOAD GEPHI")
+
+        # Nested function for link button to open website
+        def click_link():
+            webbrowser.open('https://gephi.org/users/download/')
+
+        btn_link.configure(command=click_link)
+        btn_link.pack()
+        # GEPHI_DOWNLOAD button end
+
 
     def aboutscreen(self, *arg):
         # Creates about window

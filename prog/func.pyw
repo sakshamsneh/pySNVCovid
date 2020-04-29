@@ -48,11 +48,7 @@ class covid():
         # Generates compact dataframe from original dataframe
         # Parses date columns to YYYY-mm-dd format
         dataframe = dataframe.reindex(columns=list(dataframe.columns))
-        # df = dataframe[['currentstatus', 'dateannounced', 'contractedfromwhichpatientsuspected', 'agebracket', 'detectedcity',
-        #                 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']].copy()
         df = dataframe[list(dataframe.columns)].copy()
-        # df.columns = ['currentstatus', 'dateannounced', 'contractedfromwhichpatientsuspected', 'agebracket',
-        #               'detectedcity', 'detecteddistrict', 'detectedstate', 'gender', 'patientnumber', 'statuschangedate']
         df.index = df['patientnumber']
         df['dateannounced'] = df['dateannounced'].apply(lambda x: dt.datetime.today().strftime(
             "%d/%m/%Y") if pd.isnull(pd.to_datetime(x)) else x)
@@ -73,8 +69,6 @@ class covid():
             lambda x: re.sub('P', '', str(x)))
         df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
             lambda x: x.split(",")[0] if ", " in x else x)
-        # df = df[['patientnumber', 'contractedfromwhichpatientsuspected',  'dateannounced', 'statuschangedate', 'currentstatus',
-        #          'gender', 'agebracket', 'detectedcity', 'detecteddistrict', 'detectedstate']]
         df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
             lambda x: abs(int(x)) if x.isnumeric() else '')
         self.df = df
@@ -116,11 +110,17 @@ class covid():
             colord[col_list[i]] = rgb[i]
         return colord
 
-    def gen_graph(self, graph_type, color_select):
+    def gen_graph(self, graph_type, color_select, start_date, end_date):
         # Generates nx graph from dataframe, color values generated from set_color method
         # Each id values are nodes, edges are formed from graph_type column value
         # Subsitute empty date values with current date
         df = self.df
+        # start_date=dt.datetime.strptime(start_date, "%Y-%m-%d")
+        # end_date=dt.datetime.strptime(end_date, "%Y-%m-%d")
+        start_date=start_date.strftime("%Y-%m-%d")
+        end_date=end_date.strftime("%Y-%m-%d")
+        mask = (df['dateannounced'] > start_date) & (df['dateannounced'] <= end_date)
+        df = df.loc[mask]
         color = df[color_select].unique()
         colord = self.set_color(color)
 
@@ -167,3 +167,10 @@ class covid():
         # Returns values to generate and show graph
         df=self.df[graph_fields].copy()
         return df
+
+    def get_daterange(self):
+        s=self.df.iloc[0]['dateannounced']
+        s=dt.datetime.strptime(s, "%Y-%m-%d")
+        e=self.df.iloc[-1]['dateannounced']
+        e=dt.datetime.strptime(e, "%Y-%m-%d")
+        return s, e
