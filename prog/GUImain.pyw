@@ -3,7 +3,7 @@ from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter.filedialog import asksaveasfile, askopenfilename
 from pandastable import Table, TableModel
-from tkcalendar import Calendar, DateEntry
+from tkcalendar import DateEntry
 import pandas as pd
 from subprocess import Popen
 import queue
@@ -249,7 +249,7 @@ class GUI():
         def click_ref():
             graph_field = self.prog.get_graph_field()
 
-            start, end=self.prog.get_daterange()
+            start, end = self.prog.get_daterange()
             calstart.config(state=tk.NORMAL, mindate=start, maxdate=end)
             calend.config(state=tk.NORMAL, mindate=start, maxdate=end)
 
@@ -522,7 +522,6 @@ class GUI():
         btn_link.pack()
         # GEPHI_DOWNLOAD button end
 
-
     def aboutscreen(self, *arg):
         # Creates about window
         aboutsc = tk.Toplevel(self.window)
@@ -595,6 +594,8 @@ class GUI():
         self.window.bind('<Control-h>', self.helpscreen)
         self.window.bind('<Control-A>', self.aboutscreen)
         self.window.bind('<Control-q>', self.quitscreen)
+
+        self.window.protocol("WM_DELETE_WINDOW", self.quitscreen)
 
         nb.select(f1)
         nb.enable_traversal()
