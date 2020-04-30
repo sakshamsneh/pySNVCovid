@@ -544,6 +544,17 @@ class GUI():
         btn_link.pack()
         # LINK button end
 
+    def quitscreen(self, *arg):
+        # Creates quit option from menu
+        quitsc = tk.Toplevel(self.window)
+        quitsc.geometry('220x50')
+        quitsc.transient()
+        quitsc.focus_set()
+        quitsc.title('QUIT?')
+
+        Button(quitsc, text="YES", command=self.window.quit).pack()
+        Button(quitsc, text="NO", command=quitsc.destroy).pack()
+
     def menubar(self):
         menubar = tk.Menu(self.window)
         helpmenu = tk.Menu(menubar, tearoff=0)
@@ -553,6 +564,8 @@ class GUI():
             label="Help", command=self.helpscreen, accelerator="Ctrl+h")
         helpmenu.add_command(
             label="About", command=self.aboutscreen, accelerator="Ctrl+Shift+a")
+        helpmenu.add_command(
+            label="Quit", command=self.quitscreen, accelerator="Ctrl+q")
         menubar.add_cascade(label="App", menu=helpmenu)
 
         return menubar
@@ -581,6 +594,7 @@ class GUI():
         self.window.bind('<Control-l>', self.getlink)
         self.window.bind('<Control-h>', self.helpscreen)
         self.window.bind('<Control-A>', self.aboutscreen)
+        self.window.bind('<Control-q>', self.quitscreen)
 
         nb.select(f1)
         nb.enable_traversal()

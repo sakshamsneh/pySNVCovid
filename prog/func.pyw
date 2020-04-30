@@ -61,9 +61,7 @@ class covid():
             df['statuschangedate'], format="%d/%m/%Y", errors='coerce')
         df['statuschangedate'] = df['statuschangedate'].apply(lambda x: x.strftime(
             "%Y-%m-%d") if not pd.isnull(x) else x)
-        for i, r in df.iterrows():
-            if r['dateannounced'] > r['statuschangedate']:
-                r['statuschangedate'] = pd.NaT
+        df.loc[(df.dateannounced > df.statuschangedate), 'statuschangedate']=pd.NaT
 
         df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
             lambda x: re.sub('P', '', str(x)))
@@ -113,13 +111,11 @@ class covid():
     def gen_graph(self, graph_type, color_select, start_date, end_date):
         # Generates nx graph from dataframe, color values generated from set_color method
         # Each id values are nodes, edges are formed from graph_type column value
-        # Subsitute empty date values with current date
+        # Subsitute empty date values with end date
         df = self.df
-        # start_date=dt.datetime.strptime(start_date, "%Y-%m-%d")
-        # end_date=dt.datetime.strptime(end_date, "%Y-%m-%d")
-        start_date=start_date.strftime("%Y-%m-%d")
-        end_date=end_date.strftime("%Y-%m-%d")
-        mask = (df['dateannounced'] > start_date) & (df['dateannounced'] <= end_date)
+        starts=start_date.strftime("%Y-%m-%d")
+        ends=end_date.strftime("%Y-%m-%d")
+        mask = (df['dateannounced'] > starts) & (df['dateannounced'] <= ends)
         df = df.loc[mask]
         color = df[color_select].unique()
         colord = self.set_color(color)
@@ -135,7 +131,7 @@ class covid():
             s = row['dateannounced']
             e = row['statuschangedate']
             if pd.isnull(e):
-                e = dt.datetime.today().strftime("%Y-%m-%d")
+                e=end_date
             else:
                 e = row['statuschangedate']
             self.G.add_node(row['patientnumber'], start=s, end=e,
