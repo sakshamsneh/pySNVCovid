@@ -3,7 +3,6 @@ from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter.filedialog import asksaveasfile, askopenfilename
 from pandastable import Table, TableModel
-from ttkthemes import ThemedStyle
 from tkcalendar import DateEntry
 import pandas as pd
 from subprocess import Popen
@@ -574,8 +573,6 @@ class GUI():
         self.window.geometry('480x360')
         self.window.resizable(0, 0)
         self.window.title("pySNV")
-
-        ThemedStyle(self.window).set_theme("arc")
 
         menubar = self.menubar()
         self.window.config(menu=menubar)
