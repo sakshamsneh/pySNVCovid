@@ -107,6 +107,19 @@ class Covid():
             colord[col_list[i]] = rgb[i]
         return colord
 
+    def hex2rgb(self, colord):
+        for k, v in colord.items():
+            c = {}
+            v = v.lstrip('#')
+            lenv = len(v)
+            v = list(int(v[i:i+2], 16) for i in (0, 2, 4))
+            c['a'] = 1
+            c['r'] = v[0]
+            c['g'] = v[1]
+            c['b'] = v[2]
+            colord[k] = c
+        return colord
+
     def gen_graph(self, graph_type, color_select, start_date, end_date, *arg):
         # Generates nx graph from dataframe, color values generated from set_color method
         # Each id values are nodes, edges are formed from graph_type column value
@@ -120,6 +133,7 @@ class Covid():
             colord = eval(arg[0])
         else:
             colord = self.set_color(df[color_select].unique())
+        colord = self.hex2rgb(colord)
 
         edgelist = []
         for index, row in df.iterrows():
@@ -135,8 +149,8 @@ class Covid():
                 e = end_date
             else:
                 e = row['statuschangedate']
-            self.G.add_node(row['patientnumber'], start=s, end=e,
-                            color=colord.get(row[color_select], 'black'))
+            viz = {'color': colord.get(row[color_select], 'black')}
+            self.G.add_node(row['patientnumber'], start=s, end=e, viz=viz)
 
         data = pd.DataFrame(edgelist, columns=['u1', 'u2'])
         for index, row in data.iterrows():

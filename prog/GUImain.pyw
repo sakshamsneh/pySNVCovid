@@ -169,8 +169,8 @@ class GUI():
                 w = evt.widget
                 index = int(w.curselection()[0])
                 value = w.get(index)
-                color = askcolor(parent=clrsc, title='Choose {} color'.format(value))
-                col_dict[value] = color[1]
+                rgb, color = askcolor(parent=clrsc, title='Choose {} color'.format(value))
+                col_dict[value] = color
 
             col_list.bind('<<ListboxSelect>>', onselect)
             col_list.config(width=35)
