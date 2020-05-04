@@ -1,15 +1,13 @@
-import pandas as pd
-import numpy as np
 import datetime as dt
 import urllib.request as request
-import networkx as nx
 import json
 import re
 import colorsys
-import matplotlib.pyplot as plt
+import pandas as pd
+import networkx as nx
 
 
-class covid():
+class Covid():
     """
     Code class provides code for dataframe and nx graph generation.
     This class downloads dataframe and works on them.
@@ -61,7 +59,8 @@ class covid():
             df['statuschangedate'], format="%d/%m/%Y", errors='coerce')
         df['statuschangedate'] = df['statuschangedate'].apply(lambda x: x.strftime(
             "%Y-%m-%d") if not pd.isnull(x) else x)
-        df.loc[(df.dateannounced > df.statuschangedate), 'statuschangedate']=pd.NaT
+        df.loc[(df.dateannounced > df.statuschangedate),
+               'statuschangedate'] = pd.NaT
 
         df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
             lambda x: re.sub('P', '', str(x)))
@@ -108,17 +107,19 @@ class covid():
             colord[col_list[i]] = rgb[i]
         return colord
 
-    def gen_graph(self, graph_type, color_select, start_date, end_date):
+    def gen_graph(self, graph_type, color_select, start_date, end_date, *arg):
         # Generates nx graph from dataframe, color values generated from set_color method
         # Each id values are nodes, edges are formed from graph_type column value
         # Subsitute empty date values with end date
         df = self.df
-        starts=start_date.strftime("%Y-%m-%d")
-        ends=end_date.strftime("%Y-%m-%d")
+        starts = start_date.strftime("%Y-%m-%d")
+        ends = end_date.strftime("%Y-%m-%d")
         mask = (df['dateannounced'] > starts) & (df['dateannounced'] <= ends)
         df = df.loc[mask]
-        color = df[color_select].unique()
-        colord = self.set_color(color)
+        if arg[0] is not '0':
+            colord = eval(arg[0])
+        else:
+            colord = self.set_color(df[color_select].unique())
 
         edgelist = []
         for index, row in df.iterrows():
@@ -131,7 +132,7 @@ class covid():
             s = row['dateannounced']
             e = row['statuschangedate']
             if pd.isnull(e):
-                e=end_date
+                e = end_date
             else:
                 e = row['statuschangedate']
             self.G.add_node(row['patientnumber'], start=s, end=e,
@@ -161,13 +162,17 @@ class covid():
     def get_df(self, graph_fields):
         # Creates static graph from gtype and args
         # Returns values to generate and show graph
-        df=self.df[graph_fields].copy()
+        df = self.df[graph_fields].copy()
         return df
 
     def get_daterange(self):
         # Returns daterange of data
-        s=self.df.iloc[0]['dateannounced']
-        s=dt.datetime.strptime(s, "%Y-%m-%d")
-        e=self.df.iloc[-1]['dateannounced']
-        e=dt.datetime.strptime(e, "%Y-%m-%d")
+        s = self.df.iloc[0]['dateannounced']
+        s = dt.datetime.strptime(s, "%Y-%m-%d")
+        e = self.df.iloc[-1]['dateannounced']
+        e = dt.datetime.strptime(e, "%Y-%m-%d")
         return s, e
+
+    def get_unique_val(self, col):
+        # Returns list of unique values in param col
+        return list(self.df[col].unique())

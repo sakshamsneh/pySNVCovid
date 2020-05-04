@@ -4,6 +4,7 @@ from tkinter import messagebox
 from tkinter.filedialog import asksaveasfile, askopenfilename
 from pandastable import Table, TableModel
 from tkcalendar import DateEntry
+from tkinter.colorchooser import *
 import pandas as pd
 from subprocess import Popen
 import queue
@@ -149,6 +150,60 @@ class GUI():
         optionc = OptionMenu(f2, color_type, *color_field)
         optionc.config(width=40)
         optionc.grid(column=3, row=3)
+        colordict = tk.StringVar()
+
+        def change_color(var, indx, mode):
+            col_dict = {}
+            clrsc = tk.Toplevel(self.window)
+            clrsc.geometry('300x300')
+            clrsc.transient()
+            clrsc.focus_set()
+            clrsc.title('CHOOSE COLOR')
+
+            col_list = tk.Listbox(
+                clrsc, height=5, width=40, selectmode=tk.SINGLE)
+            col_list.insert(
+                tk.END, *self.prog.get_unique_val(color_type.get()))
+
+            def onselect(evt):
+                w = evt.widget
+                index = int(w.curselection()[0])
+                value = w.get(index)
+                color = askcolor(parent=clrsc, title='Choose {} color'.format(value))
+                col_dict[value] = color[1]
+
+            col_list.bind('<<ListboxSelect>>', onselect)
+            col_list.config(width=35)
+            col_list.pack()
+
+            # SELECT button start
+            btn_sel = Button(clrsc, text="SELECT")
+
+            # Nested function for sel button save choices
+            def click_sel():
+                clrsc.destroy()
+
+            btn_sel.configure(command=click_sel)
+            btn_sel.pack()
+            # SELECT button end
+
+            # RETURN button start
+            btn_ret = Button(clrsc, text="DON'T SELECT")
+
+            # Nested function for ret button
+            def click_ret():
+                clrsc.destroy()
+                colordict.set('0')
+
+            btn_ret.configure(command=click_ret)
+            btn_ret.pack()
+            self.window.wait_window(clrsc)
+            if not bool(col_dict) or None in col_dict.values():
+                colordict.set('0')
+            else:
+                colordict.set(col_dict)
+
+        color_type.trace_add('write', change_color)
 
         # OPEN button start
         btn_open = Button(f2, text="OPEN")
@@ -235,7 +290,7 @@ class GUI():
             # generate nx graph using ThreadedTask class, on complete: continue
             self.queue = queue.Queue()
             ThreadedTask(self.queue, self.prog, "gengf",
-                         graph_type.get(), color_type.get(), calstart.get_date(), calend.get_date()).start()
+                         graph_type.get(), color_type.get(), calstart.get_date(), calend.get_date(), colordict.get()).start()
             self.window.after(100, process_queue_gengf)
 
         btn_gen.configure(command=click_gen)

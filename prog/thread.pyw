@@ -27,7 +27,7 @@ class ThreadedTask(threading.Thread):
             self.prog.save_df(self.arg[0], 0)
             self.queue.put(self.arg[0])
         elif self.task == "gengf":      # generate graph
-            colord = self.prog.gen_graph(self.arg[0], self.arg[1], self.arg[2], self.arg[3])
+            colord = self.prog.gen_graph(self.arg[0], self.arg[1], self.arg[2], self.arg[3], self.arg[4])
             self.queue.put(colord)
         elif self.task == "sgexf":      # save gexf
             self.prog.save_df(self.arg[0], 1)
