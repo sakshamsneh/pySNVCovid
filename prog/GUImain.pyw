@@ -248,8 +248,8 @@ class GUI():
                 colord = self.queue.get(0)
                 if type(colord) is dict:
                     color = ""
-                    Label(f2, text="COLOR DETAILS").grid(
-                        column=2, row=10, sticky='nws')
+                    Label(f2, text="COLORING DETAILS").grid(
+                        column=2, row=11, sticky='nws')
                     info = tk.Text(f2, height=5, width=30)
                     info.configure(state=tk.NORMAL)
 
@@ -267,7 +267,7 @@ class GUI():
                         real += 1
 
                     info.configure(state=tk.DISABLED)
-                    info.grid(column=3, row=10, sticky='nw')
+                    info.grid(column=3, row=11, sticky='nw')
 
                     self.set_status("GRAPH GENERATED!")
                     self.window.config(cursor="arrow")
