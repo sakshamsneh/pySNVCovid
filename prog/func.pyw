@@ -113,10 +113,10 @@ class Covid():
             v = v.lstrip('#')
             lenv = len(v)
             v = list(int(v[i:i+2], 16) for i in (0, 2, 4))
-            c['a'] = 1
             c['r'] = v[0]
             c['g'] = v[1]
             c['b'] = v[2]
+            c['a'] = 1
             colord[k] = c
         return colord
 

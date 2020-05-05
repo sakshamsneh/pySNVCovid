@@ -169,7 +169,8 @@ class GUI():
                 w = evt.widget
                 index = int(w.curselection()[0])
                 value = w.get(index)
-                rgb, color = askcolor(parent=clrsc, title='Choose {} color'.format(value))
+                rgb, color = askcolor(
+                    parent=clrsc, title='Choose {} color'.format(value))
                 col_dict[value] = color
 
             col_list.bind('<<ListboxSelect>>', onselect)
@@ -247,14 +248,24 @@ class GUI():
                 colord = self.queue.get(0)
                 if type(colord) is dict:
                     color = ""
-                    for k in colord.keys():
-                        color += str(k)+":"+str(colord.get(k))+"\n"
-
                     Label(f2, text="COLOR DETAILS").grid(
-                        column=2, row=9, sticky='w')
+                        column=2, row=10, sticky='nws')
                     info = tk.Text(f2, height=5, width=30)
                     info.configure(state=tk.NORMAL)
-                    info.insert(tk.END, color)
+
+                    real = 1
+                    for k in colord.keys():
+                        l = len(str(k))
+                        color = str(k)+"\n"
+                        c = [e for e in colord.get(k).values()]
+                        c.pop()
+                        c = '#{:02x}{:02x}{:02x}'.format(*c)
+                        info.insert(tk.END, color)
+                        info.tag_add(k, str(real)+".0",
+                                     str(real)+"."+str(l))
+                        info.tag_configure(k, foreground=c, font=("Helvetica", 10, "bold"))
+                        real += 1
+
                     info.configure(state=tk.DISABLED)
                     info.grid(column=3, row=10, sticky='nw')
 
