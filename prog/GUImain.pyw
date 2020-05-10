@@ -37,6 +37,7 @@ class GUI():
     def msg(self, val):
         # Displays error message box with argument val
         messagebox.showerror("EMPTY", "INPUT VALUE "+val)
+        self.window.config(cursor="arrow")
 
     def grid_config(self, frame):
         # Configures grid layout
@@ -263,7 +264,8 @@ class GUI():
                         info.insert(tk.END, color)
                         info.tag_add(k, str(real)+".0",
                                      str(real)+"."+str(l))
-                        info.tag_configure(k, foreground=c, font=("Helvetica", 10, "bold"))
+                        info.tag_configure(
+                            k, foreground=c, font=("Helvetica", 12, "bold"))
                         real += 1
 
                     info.configure(state=tk.DISABLED)
@@ -419,12 +421,9 @@ class GUI():
         ax.set_title(graph_type)
         graph_col = list(df.columns.values)
 
-        if graph_type == 'bar':
+        if graph_type == 'bar' or graph_type == 'barh':
             df.groupby(graph_col).size().unstack(fill_value=0).plot(
-                kind='bar', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
-        elif graph_type == 'barh':
-            df.groupby(graph_col).size().unstack(
-                fill_value=0).plot(kind='barh', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+                kind=graph_type, rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
         elif graph_type == 'pie':
             df.groupby(graph_col)[graph_col].count().plot(
                 kind='pie', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
@@ -508,6 +507,54 @@ class GUI():
         subplots.trace_add('write', optionsubplot)
         stacked.trace_add('write', optionstacked)
 
+        selecteddict = {}
+
+        def select_option(evnt):
+            w = evnt.widget
+            index = int(w.curselection()[0])
+            value = w.get(index)
+
+            optsc = tk.Toplevel(self.window)
+            optsc.geometry('300x300')
+            optsc.transient()
+            optsc.focus_set()
+            optsc.title('CHOOSE FIELDS')
+
+            Label(optsc, text=" ").pack()
+            col_list = tk.Listbox(
+                optsc, height=5, width=40, selectmode=tk.EXTENDED)
+            col_list.insert(tk.END, *self.prog.get_unique_val(value))
+            col_list.config(width=35)
+            col_list.pack()
+
+            # SELECT button start
+            btn_sel = Button(optsc, text="SELECT")
+
+            # Nested function for sel button save choices
+            def click_sel():
+                selecteddict[value] = [col_list.get(
+                    x) for x in col_list.curselection()]
+                optsc.destroy()
+
+            btn_sel.configure(command=click_sel)
+            btn_sel.pack()
+            # SELECT button end
+
+            # RETURN button start
+            btn_ret = Button(optsc, text="DON'T SELECT")
+
+            # Nested function for ret button
+            def click_ret():
+                optsc.destroy()
+
+            btn_ret.configure(command=click_ret)
+            btn_ret.pack()
+
+            self.window.wait_window(optsc)
+
+        # color_type.trace_add('write', change_color)
+        col_list.bind('<Double-Button-1>', select_option)
+
         # GRAPH button start
         btn_graph = Button(f4, text="GENERATE GRAPH")
 
@@ -524,7 +571,7 @@ class GUI():
             elif graph_type.get() == "SELECT":
                 self.msg("GRAPH TYPE")
                 return
-            df = self.prog.get_df(slist)
+            df = self.prog.get_df(slist, selecteddict)
             self.showmatgraph(df, graph_type.get(), legend.get(),
                               subplots.get(), stacked.get())
 

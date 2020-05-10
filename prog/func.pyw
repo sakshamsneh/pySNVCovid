@@ -173,10 +173,18 @@ class Covid():
             G = nx.read_gexf(filename)
             return nx.info(G)
 
-    def get_df(self, graph_fields):
+    def get_df(self, graph_fields, selection):
         # Creates static graph from gtype and args
+        # Selects dataframe using passed mask
         # Returns values to generate and show graph
-        df = self.df[graph_fields].copy()
+        df = self.df
+        masklist = []
+        for k, v in selection.items():
+            masklist.append(df[k].isin(v))
+        s = masklist[0]
+        for m in masklist[1:]:
+            s &= m
+        df = df[s][graph_fields].copy()
         return df
 
     def get_daterange(self):
