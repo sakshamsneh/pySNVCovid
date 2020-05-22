@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css')}}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css')}}" />
+</head>
+
+<body class="bg-secondary text-white">
+    <div class="body-content container-fluid mt-5">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <nav class="navbar navbar-dark bg-dark fixed-bottom">
+        <a href="{{ url_for('home') }}" class="navbar-brand">Home</a>
+        <a href="#" class="nav-link">#</a>
+    </nav>
+    <script src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/popper.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/script.js')}}"></script>
+</body>
+
+</html>

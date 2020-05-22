@@ -1,0 +1,23 @@
+.dataframe {
+    height: 40vh;
+    -ms-overflow-style: none;
+}
+
+.dataframe::-webkit-scrollbar {
+    display: none;
+}
+
+.dataframe th {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    background-color: rgb(50, 56, 62);
+}
+
+#graphselector{
+    display: none;
+}
+
+.selected{
+    color: #28a745;
+}

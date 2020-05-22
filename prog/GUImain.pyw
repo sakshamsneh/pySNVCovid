@@ -422,14 +422,12 @@ class GUI():
         graph_col = list(df.columns.values)
 
         if graph_type == 'bar' or graph_type == 'barh':
-            df.groupby(graph_col).size().unstack(fill_value=0).plot(
-                kind=graph_type, rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+            df=df.groupby(graph_col).size().unstack(fill_value=0)
         elif graph_type == 'pie':
-            df.groupby(graph_col)[graph_col].count().plot(
-                kind='pie', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+            df=df.groupby(graph_col)[graph_col].count()
         elif graph_type == 'line':
-            df.groupby([graph_col[0], graph_col[1]]).size().unstack(fill_value=0).plot(
-                kind='line', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+            df=df.groupby([graph_col[0], graph_col[1]]).size().unstack(fill_value=0)
+        df.plot(kind=graph_type, rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
         self.window.config(cursor="arrow")
 
     def frame4(self, nb):
