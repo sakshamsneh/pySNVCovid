@@ -7,17 +7,33 @@
     display: none;
 }
 
+select {
+    -ms-overflow-style: none;
+}
+
+select::-webkit-scrollbar {
+    display: none;
+}
+
 .dataframe th {
     position: -webkit-sticky;
     position: sticky;
     top: 0;
     background-color: rgb(50, 56, 62);
+    text-align: left;
 }
 
-#graphselector{
+#graphselector {
     display: none;
 }
 
-.selected{
+.selected {
     color: #28a745;
+}
+
+.toast {
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    z-index: 1050;
 }

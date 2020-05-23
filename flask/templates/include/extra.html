@@ -1,0 +1,26 @@
+<div class="modal fade" id="selectmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Select option values</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalbody">
+                <select class="form-control form-control-sm dropup" data-toggle="tooltip" data-placement="top"
+                    title="Graph columns" id="selcolval" multiple></select>
+            </div>
+            <div class="modal-footer btn-group-sm">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="savesel">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div role="alert hide" aria-live="assertive" aria-atomic="true" class="toast" data-delay="3000">
+    <div class="toast-body alert-warning">
+        You need to select atleast one option!
+    </div>
+</div>

@@ -1,0 +1,18 @@
+<div class="jumbotron bg-dark m-4 p-3" id="graphselector">
+    <div class="h6" id="type">&nbsp;</div>
+    <form class="bg-secondary p-3">
+        <select class="form-control form-control-sm" data-toggle="tooltip" data-placement="top" title="Graph columns"
+            id="selcolumn" multiple>
+            {% for col in collist %}
+            <option value="{{col}}">{{col}}</option>
+            {% endfor %}
+        </select>
+        <select class="form-control form-control-sm" data-toggle="tooltip" data-placement="top" title="Color column"
+            id="selcolor">
+            {% for col in collist %}
+            <option value="{{col}}">{{col}}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-dark btn-sm btn-block">Generate</button>
+    </form>
+</div>

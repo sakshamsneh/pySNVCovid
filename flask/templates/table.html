@@ -10,31 +10,12 @@ Home
         Graph Type
     </button>
     <div class="dropdown-menu" aria-labelledby="graphtype">
-        <a class="dropdown-item" href="#" id="line">Line</a>
-        <a class="dropdown-item" href="#" id="bar">Bar</a>
-        <a class="dropdown-item" href="#" id="barh">Horizontal Bar</a>
-        <a class="dropdown-item" href="#" id="pie">Pie</a>
+        <a class="dropdown-item graphitem" href="#" id="line">Line</a>
+        <a class="dropdown-item graphitem" href="#" id="bar">Bar</a>
+        <a class="dropdown-item graphitem" href="#" id="barh">Horizontal Bar</a>
+        <a class="dropdown-item graphitem" href="#" id="pie">Pie</a>
     </div>
 </div>
-<div class="jumbotron bg-dark m-4 p-3" id="graphselector">
-    <div class="h6" id="type">&nbsp;</div>
-    <form class="form-control bg-secondary p-3">
-        <select class="form-control form-control-sm dropup" data-toggle="tooltip" data-placement="top"
-            title="Graph columns" multiple>
-            {% for col in collist %}
-            <option value="{{col}}">{{col}}</option>
-            {% endfor %}
-        </select>
-        <select class="form-control form-control-sm dropup" data-toggle="tooltip" data-placement="top"
-            title="Color column">
-            {% for col in collist %}
-            <option value="{{col}}">{{col}}</option>
-            {% endfor %}
-        </select>
-        <button class="btn btn-dark btn-sm btn-block">Generate</button>
-    </form>
-</div>
-<!-- {% with type="type" %}
-{% include "include/graph.html" %}
-{% endwith %} -->
+{% include "include/option.html" %}
+{% include "include/extra.html" %}
 {% endblock %}
