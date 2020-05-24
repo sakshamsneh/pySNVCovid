@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 df = pd.DataFrame()
 
-masklist = {}
+maskdict = {}
 
 
 def allowed_file(filename):
@@ -61,15 +61,15 @@ def ret_col_values():
 @app.route('/api/columnvalues', methods=['POST'])
 def get_selcol_values():
     global df
-    global masklist
+    global maskdict
     if request.method == 'POST':
         data = request.get_json()
         column = data['column']
-        if column[0] in masklist.keys():
-            del masklist[column[0]]
+        if column[0] in maskdict.keys():
+            del maskdict[column[0]]
         if('values' in data):
             values = data['values']
-            masklist[column] = values
+            maskdict[column] = values
         return jsonify(data=True)
 
 
@@ -77,16 +77,16 @@ def get_selcol_values():
 def get_graph_data():
     graph_fields = json.loads(request.args.get('graph_fields'))
     global df
-    global masklist
+    global maskdict
     s = pd.Series()
-    if masklist:
-        column = list(masklist.keys())[0]
-        values = masklist[column]
+    if maskdict:
+        column = list(maskdict.keys())[0]
+        values = maskdict[column]
         s = df[column].isin(values)
-        for column, values in list(masklist.items())[1:]:
+        for column, values in list(maskdict.items())[1:]:
             k = df[column].isin(values)
             s &= k
     if s.empty:
-        return df[graph_fields].to_json()
+        return df[graph_fields].to_json(orient="index")
     else:
-        return df[s][graph_fields].to_json()
+        return df[s][graph_fields].to_json(orient="index")
