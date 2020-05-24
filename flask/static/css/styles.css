@@ -1,18 +1,17 @@
+::-webkit-scrollbar {
+    display: none;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+body {
+    -ms-overflow-style: none;
+}
+
 .dataframe {
     height: 40vh;
-    -ms-overflow-style: none;
-}
-
-.dataframe::-webkit-scrollbar {
-    display: none;
-}
-
-select {
-    -ms-overflow-style: none;
-}
-
-select::-webkit-scrollbar {
-    display: none;
 }
 
 .dataframe th {
@@ -36,4 +35,11 @@ select::-webkit-scrollbar {
     bottom: 60px;
     right: 0;
     z-index: 1050;
+}
+
+#myChart {
+    color: white;
+    position: relative;
+    margin-bottom: 60px;
+    top: 40px;
 }

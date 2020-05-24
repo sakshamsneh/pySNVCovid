@@ -3,19 +3,22 @@
 Home
 {% endblock %}
 {% block content %}
-{{ data|safe }}
-<div class="dropdown show">
-    <button class="btn bg-white text-secondary dropdown-toggle" type="button" id="graphtype" data-toggle="dropdown"
-        aria-haspopup="true" aria-expanded="false">
-        Graph Type
-    </button>
-    <div class="dropdown-menu" aria-labelledby="graphtype">
-        <a class="dropdown-item graphitem" id="line">Line</a>
-        <a class="dropdown-item graphitem" id="bar">Bar</a>
-        <a class="dropdown-item graphitem" id="barh">Horizontal Bar</a>
-        <a class="dropdown-item graphitem" id="pie">Pie</a>
+<div style="height: 90vh;">
+    {{ data|safe }}
+    <div class="dropdown show">
+        <button class="btn bg-white text-secondary dropdown-toggle" type="button" id="graphtype" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+            Graph Type
+        </button>
+        <div class="dropdown-menu" aria-labelledby="graphtype">
+            <a class="dropdown-item graphitem" id="line">Line</a>
+            <a class="dropdown-item graphitem" id="bar">Bar</a>
+            <a class="dropdown-item graphitem" id="barh">Horizontal Bar</a>
+            <a class="dropdown-item graphitem" id="pie">Pie</a>
+        </div>
     </div>
+    {% include "include/option.html" %}
+    {% include "include/extra.html" %}
 </div>
-{% include "include/option.html" %}
-{% include "include/extra.html" %}
+{% include "include/graph.html" %}
 {% endblock %}
