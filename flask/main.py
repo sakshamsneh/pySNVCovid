@@ -2,11 +2,14 @@ import os
 import re
 from datetime import datetime
 import pandas as pd
+import json
 from flask import Flask, redirect, render_template, request, url_for, jsonify
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 df = pd.DataFrame()
+
+masklist = []
 
 
 def allowed_file(filename):
@@ -47,15 +50,38 @@ def upload_file():
             return redirect(url_for('home'))
 
 
-@app.route('/api/column', methods=['GET', 'POST'])
-def ret_values():
+@app.route('/api/column', methods=['GET'])
+def ret_col_values():
     global df
     column = request.args['column']
     if request.method == 'GET':
         return jsonify(collist=list(df[column].dropna().unique()))
-    elif request.method == 'POST':
-        # write/filter df on the column unique values, return/update table from here
-        values = request.args['values']
-        data = df[df[column].isin(values)].head(100).to_html(
-            classes="table table-hover table-dark table-responsive table-sm")
-        return jsonify(data=data)
+
+
+@app.route('/api/columnvalues', methods=['POST'])
+def get_selcol_values():
+    global df
+    global masklist
+    if request.method == 'POST':
+        data = request.get_json()
+        column = data['column']
+        values = data['values']
+        masklist.append(df[column].isin(values))
+        return jsonify(data=True)
+
+
+@app.route('/api/graph', methods=['GET'])
+def get_graph_data():
+    graph_fields = json.loads(request.args.get('graph_fields'))
+    global df
+    global masklist
+    s = pd.Series()
+    if masklist:
+        s = masklist[0]
+        if len(masklist) > 1:
+            for m in masklist[1:]:
+                s &= m
+    if s.empty:
+        return df[graph_fields].to_json()
+    else:
+        return df[s][graph_fields].to_json()
