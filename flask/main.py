@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 df = pd.DataFrame()
 
-masklist = []
+masklist = {}
 
 
 def allowed_file(filename):
@@ -65,8 +65,11 @@ def get_selcol_values():
     if request.method == 'POST':
         data = request.get_json()
         column = data['column']
-        values = data['values']
-        masklist.append(df[column].isin(values))
+        if column[0] in masklist.keys():
+            del masklist[column[0]]
+        if('values' in data):
+            values = data['values']
+            masklist[column] = values
         return jsonify(data=True)
 
 
@@ -77,10 +80,12 @@ def get_graph_data():
     global masklist
     s = pd.Series()
     if masklist:
-        s = masklist[0]
-        if len(masklist) > 1:
-            for m in masklist[1:]:
-                s &= m
+        column = list(masklist.keys())[0]
+        values = masklist[column]
+        s = df[column].isin(values)
+        for column, values in list(masklist.items())[1:]:
+            k = df[column].isin(values)
+            s &= k
     if s.empty:
         return df[graph_fields].to_json()
     else:

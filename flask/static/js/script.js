@@ -60,13 +60,23 @@ $('#savesel').on('click', function () {
 $('th').on('click', function () {
     $currentTable = $(this).closest('table');
     index = $(this).index();
-    if (selectedcol.includes($(this).html())) {
+    var col = $(this).html();
+    if (selectedcol.includes(col)) {
         // pass selectedcol to /api/column, get original table, remove color to it
-        $currentTable.find('tr').each(function () {
-            $(this).find('th').eq(index).removeClass('selected');
-            $(this).find('td').eq(index - 1).removeClass('selected');
+        $.ajax({
+            type: 'POST',
+            url: $SCRIPT_ROOT + '/api/columnvalues',
+            data: JSON.stringify({ column: selectedcol }),
+            success: function (_) {
+                $currentTable.find('tr').each(function () {
+                    $(this).find('th').eq(index).removeClass('selected');
+                    $(this).find('td').eq(index - 1).removeClass('selected');
+                });
+                selectedcol = selectedcol.filter(f => f !== col);
+            },
+            contentType: "application/json",
+            dataType: 'json'
         });
-        selectedcol = selectedcol.filter(f => f !== $(this).html());
     } else {
         $column = $(this).html();
         $.getJSON($SCRIPT_ROOT + '/api/column', {
