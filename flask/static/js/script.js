@@ -125,12 +125,18 @@ function show_graph(data) {
                     gridLines: {
                         color: 'rgba(255, 255, 255, 0.7)'
                     }
+                }],
+                xAxes: [{
+                    gridLines: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
                 }]
             },
             responsive: true,
             maintainAspectRatio: false
         }
     });
+    document.getElementById("myChart").scrollIntoView();
 }
 
 $('#genbtn').on('click', function () {
@@ -142,4 +148,12 @@ $('#genbtn').on('click', function () {
         console.log(data);
         show_graph(data);
     });
+});
+
+var position = $(window).scrollTop();
+$(window).scroll(function () {
+    var scroll = $(window).scrollTop();
+    if (scroll <= position)
+        $(window).scrollTop(0);
+    position = scroll;
 });
