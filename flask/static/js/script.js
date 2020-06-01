@@ -33,6 +33,8 @@ $.ajax({
     traditional: true
 })
 
+// var $selectedvalues = null;
+
 $('#savesel').on('click', function () {
     var $selectedvalues = $('#selcolval').val();
     if ($selectedvalues.length != 0) {
@@ -88,55 +90,36 @@ $('th').on('click', function () {
 });
 
 function show_graph(data) {
-    var ctx = document.getElementById('myChart').getContext('2d');
+    const myChart = document.getElementById('myChart');
+    var ctx = myChart.getContext('2d');
+    $('#chart').css("height", '90vh');
     Chart.defaults.global.defaultFontColor = 'white';
-    var myChart = new Chart(ctx, {
-        type: 'bar',
+    var dispChart = new Chart(ctx, {
+        type: 'line',
         data: {
-            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-            datasets: [{
-                label: '# of Votes',
-                data: [12, 19, 3, 5, 2, 3],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
-                borderWidth: 1
-            }]
+            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+            datasets: [1, 2, 3].map(function (i) {
+                return {
+                    label: 'Dataset ' + i,
+                    data: [0, 0, 0, 0, 0, 0, 0].map(Math.random),
+                    fill: false
+                };
+            })
         },
         options: {
             scales: {
                 yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    },
-                    gridLines: {
-                        color: 'rgba(255, 255, 255, 0.7)'
-                    }
+                    ticks: { beginAtZero: true },
+                    gridLines: { color: 'rgba(255, 255, 255, 0.7)' }
                 }],
-                xAxes: [{
-                    gridLines: {
-                        color: 'rgba(255, 255, 255, 0.3)'
-                    }
-                }]
+                xAxes: [{ gridLines: { color: 'rgba(255, 255, 255, 0.3)' } }]
             },
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: { colorschemes: { scheme: 'tableau.Classic10' } }
         }
     });
-    document.getElementById("myChart").scrollIntoView();
+    myChart.scrollIntoView();
 }
 
 $('#genbtn').on('click', function () {
@@ -157,3 +140,8 @@ $(window).scroll(function () {
         $(window).scrollTop(0);
     position = scroll;
 });
+
+// $('#selcolumn').change(function () {
+//     // console.log(this.value);
+//     $selectedvalues.push(this.value);
+// })
