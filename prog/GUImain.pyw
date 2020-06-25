@@ -1,20 +1,22 @@
+import queue
 import tkinter as tk
-from tkinter.ttk import *
+import webbrowser
+from subprocess import Popen
+from thread import ThreadedTask
 from tkinter import messagebox
-from tkinter.filedialog import asksaveasfile, askopenfilename
+from tkinter.colorchooser import *
+from tkinter.filedialog import askopenfilename, asksaveasfile
+from tkinter.ttk import *
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import pyperclip
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pandastable import Table, TableModel
 from tkcalendar import DateEntry
-from tkinter.colorchooser import *
-import pandas as pd
-from subprocess import Popen
-import queue
-import webbrowser
-import pyperclip
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from thread import ThreadedTask
 import ListBox as lb
+from pdf import ReportGen
 
 
 class GUI():
@@ -32,6 +34,7 @@ class GUI():
         self.prog = prog
         self.window = window
         self.statusTxt = tk.StringVar()
+        self.report = None
         self.statusTxt.set("STATUS")
 
     def msg(self, val):
@@ -420,16 +423,20 @@ class GUI():
         chart_type.get_tk_widget().pack()
         ax.set_title(graph_type)
         graph_col = list(df.columns.values)
+        fig=None
 
         if graph_type == 'bar' or graph_type == 'barh':
-            df.groupby(graph_col).size().unstack(fill_value=0).plot(
-                kind=graph_type, rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+            fig = df.groupby(graph_col).size().unstack(fill_value=0).plot(
+                kind=graph_type, rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots).get_figure()
         elif graph_type == 'pie':
-            df.groupby(graph_col)[graph_col].count().plot(
-                kind='pie', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+            fig = df.groupby(graph_col)[graph_col].count().plot(
+                kind='pie', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots).get_figure()
         elif graph_type == 'line':
-            df.groupby([graph_col[0], graph_col[1]]).size().unstack(fill_value=0).plot(
-                kind='line', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+            fig = df.groupby([graph_col[0], graph_col[1]]).size().unstack(fill_value=0).plot(
+                kind='line', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots).get_figure()
+
+        self.report.set_image(fig)
+        self.report.gen_report('test2.pdf')
         self.window.config(cursor="arrow")
 
     def frame4(self, nb):
@@ -571,6 +578,8 @@ class GUI():
             elif graph_type.get() == "SELECT":
                 self.msg("GRAPH TYPE")
                 return
+            self.report = ReportGen(graph_type.get(), legend.get(),
+                                    subplots.get(), stacked.get(), slist, selecteddict)
             df = self.prog.get_df(slist, selecteddict)
             self.showmatgraph(df, graph_type.get(), legend.get(),
                               subplots.get(), stacked.get())

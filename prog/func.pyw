@@ -1,10 +1,11 @@
+import colorsys
 import datetime as dt
-import urllib.request as request
 import json
 import re
-import colorsys
-import pandas as pd
+import urllib.request as request
+
 import networkx as nx
+import pandas as pd
 
 
 class Covid():

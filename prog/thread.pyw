@@ -1,5 +1,6 @@
 import queue
 import threading
+
 from pandastable import TableModel
 
 
