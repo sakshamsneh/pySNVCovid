@@ -423,20 +423,33 @@ class GUI():
         chart_type.get_tk_widget().pack()
         ax.set_title(graph_type)
         graph_col = list(df.columns.values)
-        fig=None
+        fig = None
 
         if graph_type == 'bar' or graph_type == 'barh':
             fig = df.groupby(graph_col).size().unstack(fill_value=0).plot(
-                kind=graph_type, rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots).get_figure()
-        elif graph_type == 'pie':
-            fig = df.groupby(graph_col)[graph_col].count().plot(
-                kind='pie', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots).get_figure()
+                kind=graph_type, rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
         elif graph_type == 'line':
             fig = df.groupby([graph_col[0], graph_col[1]]).size().unstack(fill_value=0).plot(
-                kind='line', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots).get_figure()
+                kind='line', rot=45, legend=legend, stacked=stacked, ax=ax, subplots=subplots)
+        elif graph_type == 'pie':
+            fig = df.groupby(graph_col)[graph_col].count().plot(
+                kind='pie', rot=45, legend=legend, stacked=False, ax=ax, subplots=True)
 
-        self.report.set_image(fig)
-        self.report.gen_report('test2.pdf')
+        if subplots:
+            # i = 0
+            # for f in fig:
+            #     self.report.add_extra_img(fig[0].get_figure())
+            #     i = i+1
+            fig=fig[0]
+        self.report.set_image(fig.get_figure())
+
+        def save_graph(event):
+            files = [('Portable Document Format', '*.pdf')]
+            save_file = asksaveasfile(filetypes=files, defaultextension=files)
+            if save_file:
+                self.report.gen_report(save_file.name)
+
+        plotsc.bind('<Double-Button-1>', save_graph)
         self.window.config(cursor="arrow")
 
     def frame4(self, nb):

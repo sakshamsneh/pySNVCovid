@@ -21,9 +21,24 @@ class ReportGen():
         self.subplot = subplot
         self.slist = slist
         self.selecteddict = selecteddict
+        self.image_list=list()
 
-    def set_image(self, img):
-        # self.img = img
+    def create_template(self, c, now):
+        head = "PySNV"
+        c.setFontSize(20)
+        c.setFillColor(colors.blue)
+        c.drawString(1.0*inch, 11.0*inch, head)
+
+        c.setFontSize(10)
+        c.setFillColor(colors.black)
+        # adds rect around graph area
+        c.rect(1*inch, 1.5*inch, 6.4*inch, 6.5*inch)
+
+        c.line(0*inch, 0.9*inch, 10.5*inch, 0.9*inch)
+        c.drawString(5.5*inch, 0.7*inch, "SAKSHAM SNEH MANDAL")
+        c.drawString(5.5*inch, 0.5*inch, now)
+
+    def transform_img(self, img):
         imgdata = BytesIO()
         img.savefig(imgdata, format='svg')
         imgdata.seek(0)  # rewind the data
@@ -33,22 +48,29 @@ class ReportGen():
         drawing.width = drawing.minWidth() * scaling_x
         drawing.height = drawing.height * scaling_y
         drawing.scale(scaling_x, scaling_y)
+        return drawing
 
-        self.img = drawing
+    def set_image(self, img):
+        self.img = self.transform_img(img)
+
+    def add_extra_img(self, img):
+        self.image_list.append(self.transform_img(img))
+        # self.image_list = list(self.transform_img(img) for img in image_list)
+
+    # def add_subplots(self, c, now):
+    #     for img in self.image_list:
+    #         self.create_template(c, now)
+    #         renderPDF.draw(img, c, 1.3*inch, 1.8*inch)
+    #         c.showPage()
 
     # Create report and add data it
     def gen_report(self, filename):
         self.filename = filename
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         c = canvas.Canvas(self.filename, pagesize=A4, bottomup=1)
+        c.setTitle(self.graph_type+" GRAPH")
 
-        head = "PySNV"
-        c.setFontSize(20)
-        c.setFillColor(colors.blue)
-        # c.setFont('')
-        c.drawString(1.0*inch, 11.0*inch, head)
-        c.setFontSize(10)
-        c.setFillColor(colors.black)
+        # Show options
         c.drawString(1.0*inch, 10.4*inch, "GRAPH TYPE:"+self.graph_type)
         c.drawString(1.0*inch, 10.0*inch, "COLUMNS SELECTED:"+str(self.slist))
         c.drawString(1.0*inch, 9.6*inch, "GRAPH OPTIONS:")
@@ -71,13 +93,14 @@ class ReportGen():
         c.setFillColor(colors.black)
         c.drawString(1.0*inch, 8.5*inch, self.graph_type+" GRAPH")
 
-        c.rect(1*inch, 1.5*inch, 6.4*inch, 6.5*inch)
-        renderPDF.draw(self.img, c, 1.3*inch, 1.8*inch)
+        self.create_template(c, now)
+        renderPDF.draw(self.img, c, 1.3*inch, 1.8*inch)     # show graph
+        # if not self.subplot or self.graph_type=='PIE':
+        #     renderPDF.draw(self.img, c, 1.3*inch, 1.8*inch)     # show graph
+        # else:
+        #     c.showPage()
+        #     self.add_subplots(c, now)
 
-        # c.setStrokeColorRGB(0.2, 0.5, 0.3)
-        c.line(0*inch, 0.9*inch, 10.5*inch, 0.9*inch)
-        c.drawString(5.5*inch, 0.7*inch, "SAKSHAM SNEH MANDAL")
-        c.drawString(5.5*inch, 0.5*inch, now)
         c.save()
 
 

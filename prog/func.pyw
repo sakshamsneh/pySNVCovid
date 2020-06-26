@@ -180,12 +180,15 @@ class Covid():
         # Returns values to generate and show graph
         df = self.df
         masklist = []
-        for k, v in selection.items():
-            masklist.append(df[k].isin(v))
-        s = masklist[0]
-        for m in masklist[1:]:
-            s &= m
-        df = df[s][graph_fields].copy()
+        if selection:
+            for k, v in selection.items():
+                masklist.append(df[k].isin(v))
+            s = masklist[0]
+            for m in masklist[1:]:
+                s &= m
+            df = df[s][graph_fields].copy()
+        else:
+            df = df[graph_fields].copy()
         return df
 
     def get_daterange(self):
