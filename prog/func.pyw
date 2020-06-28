@@ -201,4 +201,4 @@ class Covid():
 
     def get_unique_val(self, col):
         # Returns list of unique values in param col
-        return list(self.df[col].unique())
+        return list(self.df[col].dropna().unique())

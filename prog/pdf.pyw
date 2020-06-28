@@ -15,6 +15,7 @@ class ReportGen():
     ReportGen class creates pdf report from image and text
     """
 
+    # Static Graph data
     def __init__(self, graph_type, legend, subplot, stacked, slist, selecteddict):
         self.graph_type = graph_type.upper()
         self.legend = legend
@@ -25,6 +26,7 @@ class ReportGen():
         self.image_list = list()
 
     def create_header(self, c):
+        # Creates header 
         head = "PySNV"
         c.setFontSize(20)
         c.setFillColor(colors.blue)
@@ -51,16 +53,6 @@ class ReportGen():
 
     def set_image(self, img):
         self.img = self.transform_img(img)
-
-    # def add_extra_img(self, img):
-    #     self.image_list.append(self.transform_img(img))
-    #     self.image_list = list(self.transform_img(img) for img in image_list)
-
-    # def add_subplots(self, c, now):
-    #     for img in self.image_list:
-    #         self.create_template(c, now)
-    #         renderPDF.draw(img, c, 1.3*inch, 1.8*inch)
-    #         c.showPage()
 
     # Create report and add data it
     def gen_report(self, filename):
@@ -99,21 +91,14 @@ class ReportGen():
 
         c.rect(1*inch, 1.5*inch, 6.4*inch, 6.5*inch)
         renderPDF.draw(self.img, c, 1.3*inch, 1.8*inch)     # show graph
-        # if not self.subplot or self.graph_type=='PIE':
-        #     renderPDF.draw(self.img, c, 1.3*inch, 1.8*inch)     # show graph
-        # else:
-        #     c.showPage()
-        #     self.add_subplots(c, now)
 
-        done = list()
         while self.selecteddict:
             c.showPage()
             self.create_header(c)
             self.create_footer(c, now)
             c.drawString(1.0*inch, 10.4*inch, "MASK SELECTION:")
             delta = 0
-            for d in done:
-                self.selecteddict.pop(d, '')
+            done = list()
             for k, v in self.selecteddict.items():
                 c.drawString(1.5*inch, (10.0-delta)*inch, k+":")
                 v = re.sub("(.{64})", "\\1\n",  ','.join(str(i)
@@ -127,5 +112,7 @@ class ReportGen():
                 delta += 0.2
                 if delta >= 8:
                     break
+            for d in done:
+                self.selecteddict.pop(d, '')
 
         c.save()

@@ -337,6 +337,7 @@ class GUI():
                 optionc['menu'].add_command(
                     label=choice, command=tk._setit(color_type, choice))
             self.set_status("REFRESHED!")
+            self.window.config(cursor="arrow")
 
         btn_ref.configure(command=click_ref)
         btn_ref.grid(column=2, row=7, sticky='ws')
@@ -381,6 +382,7 @@ class GUI():
             info.insert(tk.END, self.prog.get_info())
             info.configure(state=tk.DISABLED)
             self.set_status("REFRESHED!")
+            self.window.config(cursor="arrow")
 
         btn_ref.configure(command=click_ref)
         btn_ref.grid(column=2, row=6, sticky='ws')
@@ -436,10 +438,6 @@ class GUI():
                 kind='pie', rot=45, legend=legend, stacked=False, ax=ax, subplots=True)
 
         if subplots:
-            # i = 0
-            # for f in fig:
-            #     self.report.add_extra_img(fig[0].get_figure())
-            #     i = i+1
             fig=fig[0]
         self.report.set_image(fig.get_figure())
 
@@ -448,6 +446,7 @@ class GUI():
             save_file = asksaveasfile(filetypes=files, defaultextension=files)
             if save_file:
                 self.report.gen_report(save_file.name)
+                self.set_status("FILE SAVED AT "+save_file)
 
         plotsc.bind('<Double-Button-1>', save_graph)
         self.window.config(cursor="arrow")
@@ -610,6 +609,7 @@ class GUI():
             col_list.delete(0, tk.END)
             col_list.insert(tk.END, *collist)
             self.set_status("REFRESHED!")
+            self.window.config(cursor="arrow")
 
         btn_ref.configure(command=click_ref)
         btn_ref.grid(column=2, row=7, sticky='ws')
