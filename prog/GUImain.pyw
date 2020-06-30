@@ -446,7 +446,7 @@ class GUI():
             save_file = asksaveasfile(filetypes=files, defaultextension=files)
             if save_file:
                 self.report.gen_report(save_file.name)
-                self.set_status("FILE SAVED AT "+save_file)
+                self.set_status("FILE SAVED AT "+save_file.name)
 
         plotsc.bind('<Double-Button-1>', save_graph)
         self.window.config(cursor="arrow")
@@ -640,7 +640,7 @@ class GUI():
         helpsc.transient()
         helpsc.focus_set()
         helpsc.title('HELP')
-        help_txt = """\nTabs:\n1.DOWNLOAD: Download, view first 100 rows and save dataframe as CSV\n2.SELECT: Select graph type, node color field, and view the color assigned, save the generated graph file as GEXF\n3.DISPLAY: Check the graph attributes, open the file in gephi(installation required for viewing graph).\n4.STATIC GRAPH: Select graph type, graph fields(& reorder them), options and generate static graph.\n\n Open CSV, GEXF file directly for viewing results."""
+        help_txt = """\nTabs:\n1.DOWNLOAD: Download, view first 100 rows and save dataframe as CSV\n2.SELECT: Select graph type, node color field, and view the color assigned, save the generated graph file as GEXF\n3.DISPLAY: Check the graph attributes, open the file in gephi(installation required for viewing graph).\n4.STATIC GRAPH: Select graph type, graph fields(& reorder them), options, generate static graph and reports.\n\n Open CSV, GEXF file directly for viewing results."""
         Label(helpsc, text=help_txt, justify=tk.LEFT, wraplength=250).pack()
 
         # LINK button

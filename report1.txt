@@ -85,17 +85,19 @@ if save=true:
 
 PROCESS:
 Download dataset in DOWNLOAD Tab or load in SELECT Tab
-Select column to create dynamic graph: currentstatus
-Select color column and specify the colors: gender
-    F:red
-    M:blue
+Select column to create dynamic graph: gender
+Select color column and specify the colors: currentstatus
+    Recovered:red
+    Hospitalized:green
+    Deceased:blue
+    Migrated:orange
 Select date range from start to end: 2020-03-02 to 2020-04-02
 Generated graph details:
     Name: pySNV
     Type: Graph
-    Number of nodes: 2544
-    Number of edges: 2540
-    Average degree:   1.9969
+    Number of nodes: 2547
+    Number of edges: 5080
+    Average degree:   3.9890
 Launch GEPHI in DISPLAY Tab
 Calculate graph statistics from Stats tab
 Enable timeline in Gephi
@@ -108,3 +110,7 @@ Select columns and their values as masklist:    currentstatus: Hospitalized,Dece
 Set options Legend, Subplot or Stacked: Legend:True, Subplot:True, Stacked:False
 Generate graph and view input
 Double Click to save the graph as pdf
+
+RESULT:
+pdf
+pdf
