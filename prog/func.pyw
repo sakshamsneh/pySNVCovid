@@ -49,26 +49,17 @@ class Covid():
         dataframe = dataframe.reindex(columns=list(dataframe.columns))
         df = dataframe[list(dataframe.columns)].copy()
         df.index = df['patientnumber']
-        df['dateannounced'] = df['dateannounced'].apply(lambda x: dt.datetime.today().strftime(
-            "%d/%m/%Y") if pd.isnull(pd.to_datetime(x)) else x)
-        df['dateannounced'] = pd.to_datetime(
-            df['dateannounced'], format="%d/%m/%Y")
-        df['dateannounced'] = df['dateannounced'].apply(
-            lambda x: x.strftime("%Y-%m-%d"))
+        df['dateannounced'] = df['dateannounced'].apply(lambda x: dt.datetime.today().strftime("%d/%m/%Y") if pd.isnull(pd.to_datetime(x)) else x)
+        df['dateannounced'] = pd.to_datetime(df['dateannounced'], format="%d/%m/%Y")
+        df['dateannounced'] = df['dateannounced'].apply(lambda x: x.strftime("%Y-%m-%d"))
 
-        df['statuschangedate'] = pd.to_datetime(
-            df['statuschangedate'], format="%d/%m/%Y", errors='coerce')
-        df['statuschangedate'] = df['statuschangedate'].apply(lambda x: x.strftime(
-            "%Y-%m-%d") if not pd.isnull(x) else x)
-        df.loc[(df.dateannounced > df.statuschangedate),
-               'statuschangedate'] = pd.NaT
+        df['statuschangedate'] = pd.to_datetime(df['statuschangedate'], format="%d/%m/%Y", errors='coerce')
+        df['statuschangedate'] = df['statuschangedate'].apply(lambda x: x.strftime("%Y-%m-%d") if not pd.isnull(x) else x)
+        df.loc[(df.dateannounced > df.statuschangedate),'statuschangedate'] = pd.NaT
 
-        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
-            lambda x: re.sub('P', '', str(x)))
-        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
-            lambda x: x.split(",")[0] if ", " in x else x)
-        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(
-            lambda x: abs(int(x)) if x.isnumeric() else '')
+        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(lambda x: re.sub('P', '', str(x)))
+        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(lambda x: x.split(",")[0] if ", " in x else x)
+        df['contractedfromwhichpatientsuspected'] = df['contractedfromwhichpatientsuspected'].apply(lambda x: abs(int(x)) if x.isnumeric() else '')
         self.df = df
 
     def get_color_field(self):
