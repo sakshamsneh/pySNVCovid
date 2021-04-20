@@ -97,7 +97,7 @@ progressbar==2.5
 prometheus-client==0.7.1
 prompt-toolkit==2.0.9
 protobuf==3.9.1
-py==1.8.0
+py==1.10.0
 py2exe==0.9.3.2
 pycodestyle==2.5.0
 Pygments==2.4.2
