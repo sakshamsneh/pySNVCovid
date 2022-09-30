@@ -63,7 +63,7 @@ ipywidgets==7.5.1
 isort==4.3.21
 itsdangerous==1.1.0
 jedi==0.15.1
-joblib==0.13.2
+joblib==1.2.0
 jsonschema==3.0.2
 kiwisolver==1.1.0
 lazy-object-proxy==1.4.3
